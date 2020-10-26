@@ -8,11 +8,13 @@ import {
     ApolloProvider
 } from "@apollo/client";
 
-import { getToken } from "./util";
+import { getCash } from "./util";
+import { AUTH_TOKEN } from "./cashItems";
 
 import { AppNavigation } from "./src/navigations/AppNavigation";
 import { QueryProvider } from "./src/context/query/QueryProvider";
 import { AuthState } from "./src/context/auth/AuthState";
+import { DataState } from "./src/context/data/DataState";
 
 export default function App() {
     const [state, setState] = useState({loading: false});
@@ -28,15 +30,9 @@ export default function App() {
 
     const client = new ApolloClient({
         uri: "http://192.168.0.106:5000/graphql",
-        cache: new InMemoryCache({
-            typePolicies:{
-                Person: {
-                    keyFields: ["name", "surname", "email"]
-                }
-            }
-        }),
+        cache: new InMemoryCache(),
         headers: {
-            authorization: getToken()
+            authorization: getCash(AUTH_TOKEN)
         },
         credentials: 'include'
     });
@@ -47,13 +43,15 @@ export default function App() {
 
     return (
         <ApolloProvider client={client}>
-            <QueryProvider>
-                <AuthState>
-                    <Root>
-                        <AppNavigation/>
-                    </Root>
-                </AuthState>
-            </QueryProvider>
+            <AuthState>
+                <DataState>
+                    <QueryProvider>
+                        <Root>
+                            <AppNavigation/>
+                        </Root>
+                    </QueryProvider>
+                </DataState>
+            </AuthState>
         </ApolloProvider>
     );
 }

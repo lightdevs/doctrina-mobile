@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     StyleSheet
 } from "react-native";
@@ -11,8 +11,11 @@ import {
     Text,
     Toast
 } from 'native-base';
+import {QueryContext} from "../context/query/queryContext";
 
 export const SignUpForm = () => {
+    const {register} = useContext(QueryContext);
+
     const [fields, setFields] = useState({
        firstName: '',
        lastName: '',
@@ -150,6 +153,14 @@ export const SignUpForm = () => {
                                 position: 'bottom'
                             });
                         }
+
+                        register({
+                            variables: {
+                                name: fields.firstName,
+                                email: fields.email,
+                                password: fields.password
+                            }
+                        })
                     }}
                 >
                     <Text style={{fontWeight: 'bold'}}>

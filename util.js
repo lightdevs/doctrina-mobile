@@ -1,15 +1,29 @@
 import { AsyncStorage } from 'react-native';
 
-const AUTH_TOKEN = 'AUTH_TOKEN';
-
-export const getToken = () => {
-    return AsyncStorage.getItem(AUTH_TOKEN);
+export const getCash = async (item) => {
+    try{
+        return JSON.parse(await AsyncStorage.getItem(item));
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 };
 
-export const setToken = (newToken) => {
-    return AsyncStorage.setItem(AUTH_TOKEN, newToken);
+export const setCash = async (item, newValue) => {
+    try{
+        await AsyncStorage.setItem(item, JSON.stringify(newValue));
+    }
+    catch (e){
+        console.log(e.message);
+    }
 };
 
-export const removeToken = () => {
-    return AsyncStorage.removeItem(AUTH_TOKEN);
+export const removeCash = async (item) => {
+    try{
+        await AsyncStorage.removeItem(item);
+    }
+    catch (e) {
+        console.log(e.message);
+    }
 };
+

@@ -1,27 +1,41 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { useQuery, useMutation } from "@apollo/client";
 import { QueryContext } from "./queryContext";
+import { AuthContext } from "../auth/authContext";
+import { DataContext } from "../data/dataContext";
 import { REGISTER, LOGIN } from "./query"
+import { setCash } from "../../../util";
+import { USER_EMAIL, USER_NAME, USER_SURNAME } from "../../../cashItems";
 
 export const QueryProvider = ({children}) => {
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(null);
+    const { signIn } = useContext(AuthContext);
+    const { setData } = useContext(DataContext);
 
-    const registerMutation = async (options) => {
-        const [register, {data, error, loading}] = await useMutation(REGISTER);
+    const [register] = useMutation(REGISTER, {
+        onCompleted: ((data) => {
+            if(data.register){
+                setCash(USER_EMAIL, data.register.email);
+                setCash(USER_NAME, data.register.name);
+                setCash(USER_SURNAME, data.register.surname);
+                signIn(data.register.token);
+            }
+        })
+    });
 
-        await register({variables: options.var});
+    const [login] = useMutation(LOGIN, {
+        onCompleted: (data) => {
+            if(data.login){
+                signIn(data.login.token)
+            }
+        }
+    });
 
-        return {data, error, loading};
+    const registerMutation = async ({variables}) => {
+        await register({variables: variables});
     }
 
-    const loginMutation = async (options) => {
-        const [login, {data, error, loading}] = await useMutation(LOGIN);
-
-        await login({variables: options.var});
-
-        return {data, error, loading};
+    const loginMutation = async ({variables}) => {
+        await login({variables: variables});
     }
 
     return (

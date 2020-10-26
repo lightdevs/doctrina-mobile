@@ -10,7 +10,7 @@ import {
     Button,
     Text
 } from 'native-base';
-import { AuthContext } from "../context/auth/authContext";
+import {QueryContext} from "../context/query/queryContext";
 
 export const SignInForm = () => {
     const [fields, setFields] = useState({
@@ -18,7 +18,7 @@ export const SignInForm = () => {
         password: ''
     })
 
-    const { signIn } = useContext(AuthContext);
+    const { login } = useContext(QueryContext);
 
     return (
         <View style={styles.container}>
@@ -63,7 +63,7 @@ export const SignInForm = () => {
                 <Button
                     style={{borderRadius: 10, backgroundColor: '#58c2d5', alignSelf: 'center'}}
                     onPress={() => {
-                        signIn({
+                        login({
                             variables: {
                                 email: fields.email,
                                 password: fields.password
