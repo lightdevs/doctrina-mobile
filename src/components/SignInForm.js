@@ -8,9 +8,12 @@ import {
     View,
     Input,
     Button,
-    Text
+    Text,
+    Toast
 } from 'native-base';
 import {QueryContext} from "../context/query/queryContext";
+import {getCash} from "../../util";
+import {USER_ID} from "../../cashItems";
 
 export const SignInForm = () => {
     const [fields, setFields] = useState({
@@ -18,7 +21,7 @@ export const SignInForm = () => {
         password: ''
     })
 
-    const { login } = useContext(QueryContext);
+    const { login, getAllCourses } = useContext(QueryContext);
 
     return (
         <View style={styles.container}>
@@ -68,7 +71,16 @@ export const SignInForm = () => {
                                 email: fields.email,
                                 password: fields.password
                             }
-                        });
+                        })
+                            .then(async () => {
+                                getAllCourses({variables: {id: await getCash(USER_ID), page: 0}})
+                            })
+                            .catch((e) => {
+                                return Toast.show({
+                                    text: e.message
+                                })
+                            });
+
                     }}
                 >
                     <Text style={{fontWeight: 'bold'}}>
@@ -93,4 +105,4 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginVertical: 5
     }
-});
+})

@@ -157,6 +157,7 @@ export const SignUpForm = () => {
                         register({
                             variables: {
                                 name: fields.firstName,
+                                surname: fields.lastName,
                                 email: fields.email,
                                 password: fields.password
                             }

@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AppLoading } from "expo";
 import * as Font from 'expo-font';
-import { Root } from "native-base";
+import { Root, Toast } from "native-base";
 import {
     ApolloClient,
     InMemoryCache,
-    ApolloProvider
+    ApolloProvider,
+    HttpLink,
+    ApolloLink,
+    concat
 } from "@apollo/client";
 
-import { getCash } from "./util";
+import { getCash} from "./util";
 import { AUTH_TOKEN } from "./cashItems";
 
 import { AppNavigation } from "./src/navigations/AppNavigation";
 import { QueryProvider } from "./src/context/query/QueryProvider";
 import { AuthState } from "./src/context/auth/AuthState";
-import { DataState } from "./src/context/data/DataState";
+import { ListCourseState } from "./src/context/data/listCourse/ListCourseState";
+import { CourseState } from "./src/context/data/course/CourseState";
 
 export default function App() {
     const [state, setState] = useState({loading: false});
@@ -25,16 +29,25 @@ export default function App() {
             Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
         })
             .then(() => setState({loading: true}))
-            .catch(() => {})
+            .catch(() => {});
     }, []);
 
+    const httpLink = new HttpLink({ uri: "http://192.168.0.106:5000/graphql" });
+
+    const authMiddleware = new ApolloLink(async (operation, forward) => {
+        operation.setContext({
+            headers: {
+                authorization: await getCash(AUTH_TOKEN),
+            }
+        });
+
+        return forward(operation);
+    })
+
     const client = new ApolloClient({
-        uri: "http://192.168.0.106:5000/graphql",
+        link: concat(authMiddleware, httpLink),
         cache: new InMemoryCache(),
-        headers: {
-            authorization: getCash(AUTH_TOKEN)
-        },
-        credentials: 'include'
+        credentials: "include"
     });
 
     if(!state.loading){
@@ -44,13 +57,15 @@ export default function App() {
     return (
         <ApolloProvider client={client}>
             <AuthState>
-                <DataState>
-                    <QueryProvider>
-                        <Root>
-                            <AppNavigation/>
-                        </Root>
-                    </QueryProvider>
-                </DataState>
+                <ListCourseState>
+                    <CourseState>
+                        <QueryProvider>
+                            <Root>
+                                <AppNavigation/>
+                            </Root>
+                        </QueryProvider>
+                    </CourseState>
+                </ListCourseState>
             </AuthState>
         </ApolloProvider>
     );

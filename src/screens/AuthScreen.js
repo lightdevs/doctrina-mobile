@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 
 import {
     StyleSheet
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     },
     formContainer: {
         width: 300,
-        backgroundColor: '#ccffff',
+        backgroundColor: '#F6F6F6',
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#80ffff',

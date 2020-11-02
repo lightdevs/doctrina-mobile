@@ -1,8 +1,8 @@
 import { LOG_IN, LOG_OUT } from '../types'
 
 const handlers = {
-    [LOG_IN]: state => true,
-    [LOG_OUT]: state => false,
+    [LOG_IN]: (state, { payload }) => ({token: payload}),
+    [LOG_OUT]: state => ({token: null}),
     DEFAULT: state => state
 }
 
