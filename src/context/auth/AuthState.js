@@ -6,7 +6,7 @@ import {setCash, removeCash, getCash} from "../../../util";
 import { AUTH_TOKEN } from "../../../cashItems";
 
 export const AuthState = ({children}) => {
-    const [state, dispatch] = useReducer(authReducer, {token: null});
+    const [state, dispatch] = useReducer(authReducer, {token: "null"});
 
     const signIn = (token) => {
         setCash(AUTH_TOKEN, token)

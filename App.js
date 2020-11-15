@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { AppLoading } from "expo";
+import { LoadingScreen } from './src/screens/LoadingScreen';
 import * as Font from 'expo-font';
-import { Root, Toast } from "native-base";
+import { Root } from "native-base";
 import {
     ApolloClient,
     InMemoryCache,
@@ -19,16 +19,17 @@ import { QueryProvider } from "./src/context/query/QueryProvider";
 import { AuthState } from "./src/context/auth/AuthState";
 import { ListCourseState } from "./src/context/data/listCourse/ListCourseState";
 import { CourseState } from "./src/context/data/course/CourseState";
+import { ProfileState } from "./src/context/data/profile/ProfileState";
 
 export default function App() {
-    const [state, setState] = useState({loading: false});
+    const [state, setState] = useState({loading: true});
 
     useEffect(() => {
         Font.loadAsync({
             Roboto: require('native-base/Fonts/Roboto.ttf'),
             Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
         })
-            .then(() => setState({loading: true}))
+            .then(() => setState({loading: false}))
             .catch(() => {});
     }, []);
 
@@ -50,8 +51,8 @@ export default function App() {
         credentials: "include"
     });
 
-    if(!state.loading){
-        return <AppLoading/>;
+    if(state.loading){
+        return <LoadingScreen/>;
     }
 
     return (
@@ -59,11 +60,13 @@ export default function App() {
             <AuthState>
                 <ListCourseState>
                     <CourseState>
-                        <QueryProvider>
-                            <Root>
-                                <AppNavigation/>
-                            </Root>
-                        </QueryProvider>
+                        <ProfileState>
+                            <QueryProvider>
+                                <Root>
+                                    <AppNavigation/>
+                                </Root>
+                            </QueryProvider>
+                        </ProfileState>
                     </CourseState>
                 </ListCourseState>
             </AuthState>

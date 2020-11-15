@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useCallback } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
 import {
@@ -21,6 +21,15 @@ import {USER_ID} from "../../cashItems";
 export const ListCourseScreen = ({navigation}) => {
     const { getAllCourses, getCourse } = useContext(QueryContext);
     const { listCourseState, clearList} = useContext(ListCourseContext);
+
+    useFocusEffect(useCallback(() => {
+        navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
+            headerRight: null,
+            headerStyle: {
+                backgroundColor: "white"
+            }
+        });
+    }), []);
 
     const getCourses = async () => {
         getAllCourses({variables: {id: await getCash(USER_ID), page: listCourseState.page}})

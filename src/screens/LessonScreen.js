@@ -8,11 +8,10 @@ import {
     View,
     Text
 } from 'native-base'
-import { CourseContext } from "../context/data/course/courseContext";
+import FlipCard from "react-native-flip-card";
+import TextTicker from "react-native-text-ticker";
 
-export const CourseScreen = () => {
-    const { courseState } = useContext(CourseContext);
-
+export const LessonScreen = () => {
     const params = {
         links: [
             {
@@ -24,7 +23,29 @@ export const CourseScreen = () => {
                 ref: "https://google-meet.com"
             }
         ],
-        lessons: [
+        materials: [
+            {
+                title: "Title",
+                name: "Lection №1",
+                file: "l3.docx"
+            },
+            {
+                title: "Title",
+                name: "Lection №1",
+                file: "l3.docx"
+            },
+            {
+                title: "Title",
+                name: "Lection №1",
+                file: "l3.docx"
+            },
+            {
+                title: "Title",
+                name: "Lection №1",
+                file: "l3.docx"
+            }
+        ],
+        tasks: [
             {
                 type: "Laboratory",
                 topic: "SRS-document",
@@ -67,122 +88,87 @@ export const CourseScreen = () => {
                 date: "12.09.2020 9:30",
                 status: "Will pass"
             }
-        ],
-        materials: [
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            }
         ]
     }
 
     const {
         links,
-        lessons,
-        materials
+        materials,
+        tasks
     } = params;
-
-    const [show, setShow] = useState({
-        link: true,
-        material: true,
-        desc: true,
-        lesson: true
-    });
 
     return (
         <ScrollView style={{backgroundColor: '#ECECEC'}}>
-            <View style={[styles.viewPart, { marginTop: 5, flexDirection: "row", justifyContent: 'space-between'}]}>
+            <FlipCard
+                style={[styles.viewPart, { marginTop: 10, justifyContent: 'center', height: 100}]}
+                flipHorizontal={false}
+                flipVertical={true}
+                friction={6}
+            >
                 <View style={{justifyContent: 'center'}}>
-                    <Text style={{color: "lightblue", fontSize:40, fontWeight: "bold"}}>
-                        {courseState.title}
-                    </Text>
+                    <TextTicker
+                        style={{color: "lightblue", fontSize:40, fontWeight: "bold"}}
+                        loop
+                        bounce={false}
+                        marqueeDelay={1000}
+                        scrollSpeed={250}
+                    >
+                        {"AofSR"}
+                    </TextTicker>
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={{marginRight: 15}}>
+                            <Text>
+                                {"Lesson"}
+                            </Text>
+                            <Text style={{fontWeight: 'bold'}}>
+                                {"#"}{"4"}
+                            </Text>
+                        </Text>
+                        <Text>
+                            {"Laboratory"}
+                        </Text>
+                    </View>
                 </View>
                 <View style={{justifyContent: "center"}}>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Identifier: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
-                            {courseState._id}
+                        <Text>
+                            {"courseState._id"}
                         </Text>
                     </Text>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Teacher: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
-                            {courseState.teacher}
+                        <Text>
+                            {"courseState.teacher"}
                         </Text>
                     </Text>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Date: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
-                            {courseState.dateStart && (new Date(courseState.dateStart)).toString()} - {courseState.dateStart && (new Date(courseState.dateEnd)).toString()}
+                        <Text>
+                            {"()"} - {"()"}
                         </Text>
                     </Text>
                 </View>
-            </View>
+            </FlipCard>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, link: !show.link})}
-                >
-                    <Text style={styles.title}>
-                        {"Links:"}
-                    </Text>
-                    <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.link)? "-": "+"}
-                    </Text>
-                </TouchableOpacity>
-                { show.link && <View>
-                    {links.map((link, index) => (
-                        <TouchableOpacity
-                            style={{marginVertical: 5}}
-                            key={index}
-                        >
-                            <View style={{ flexDirection: "row"}}>
-                                <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{link.name}: </Text>
-                                </View>
-                                <View style={{flex: 1}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{link.ref}</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>}
-            </View>
-            <View style={styles.viewPart}>
-                <TouchableOpacity
-                    style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, material: !show.material})}
+                    onPress={null}
                 >
                     <Text style={styles.title}>
                         {"Materials:"}
                     </Text>
                     <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.material)? "-": "+"}
+                        {"+"}
                     </Text>
                 </TouchableOpacity>
-                {show.material && <View>
+                <View>
                     {materials.map((material, index) => (
                         <TouchableOpacity
                             style={{marginVertical: 5}}
@@ -201,63 +187,101 @@ export const CourseScreen = () => {
                             </View>
                         </TouchableOpacity>
                     ))}
-                </View>}
+                </View>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, desc: !show.desc})}
+                    onPress={null}
+                >
+                    <Text style={styles.title}>
+                        {"Links:"}
+                    </Text>
+                    <Text style={{fontSize: 20, marginRight: 5}}>
+                        {"+"}
+                    </Text>
+                </TouchableOpacity>
+                <View>
+                    {links.map((link, index) => (
+                        <TouchableOpacity
+                            style={{marginVertical: 5}}
+                            key={index}
+                        >
+                            <View style={{ flexDirection: "row"}}>
+                                <View style={{width: 100}}>
+                                    <Text style={{fontWeight: "bold", fontSize: 13}}>
+                                        {link.name}:
+                                    </Text>
+                                </View>
+                                <View style={{flex: 1}}>
+                                    <Text style={{fontSize: 13, color: 'lightgray'}}>
+                                        {link.ref}
+                                    </Text>
+                                </View>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+            <View style={styles.viewPart}>
+                <TouchableOpacity
+                    style={{justifyContent: "space-between", flexDirection: 'row'}}
+                    onPress={null}
                 >
                     <Text style={styles.title}>
                         {"Description:"}
                     </Text>
                     <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.desc)? "-": "+"}
+                        {"+"}
                     </Text>
                 </TouchableOpacity>
-                {show.desc && <View>
+                <View>
                     <Text>
-                        {courseState.description}
+                        {"courseState.description"}
                     </Text>
-                </View>}
+                </View>
             </View>
             <View style={[styles.viewPart, {backgroundColor: "#F6F6F6"}]}>
                 <TouchableOpacity
                     style={styles.titleLesson}
-                    onPress={() => setShow({...show, lesson: !show.lesson})}
+                    onPress={null}
                 >
-                    <Text style={styles.title}>
-                        {"Lessons:"}
-                    </Text>
-                    <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.lesson)? "-": "+"}
-                    </Text>
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={styles.title}>
+                            {"Tasks:"}
+                        </Text>
+                        <View style={{justifyContent: 'flex-end', marginLeft: 5, marginBottom: 3}}>
+                            <Text style={{fontSize: 12}}>
+                                {"(max "}{"10"}{" points)"}
+                            </Text>
+                        </View>
+                    </View>
+                    <View>
+                        <Text style={{fontSize: 20, marginRight: 5}}>
+                            {"+"}
+                        </Text>
+                    </View>
                 </TouchableOpacity>
-                {show.lesson && <View>
-                    {lessons.map((lesson, index) =>
+                <View>
+                    {tasks.map((task, index) =>
                         <View style={styles.containerLesson} key={index}>
-                            <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
+                            <View style={{width: 75, alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.type}
+                                    {task.type}
                                 </Text>
                             </View>
-                            <View style={{width: "30%", alignItems: "center", justifyContent: "center"}}>
+                            <View style={{width: 150, alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.topic}
+                                    {task.topic}
                                 </Text>
                             </View>
-                            <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
+                            <View style={{width: 50, alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.date}
-                                </Text>
-                            </View>
-                            <View style={{width: "10%", alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {lesson.mark}
+                                    {task.mark}
                                 </Text>
                             </View>
                             <View style={{
-                                width: "20%",
+                                width: 60,
                                 alignItems: "center",
                                 backgroundColor: 'lightblue',
                                 borderTopRightRadius: 10,
@@ -265,11 +289,11 @@ export const CourseScreen = () => {
                                 justifyContent: "center"
                             }}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.status}
+                                    {task.status}
                                 </Text>
                             </View>
                         </View>)}
-                </View>}
+                </View>
             </View>
         </ScrollView>)
 }
@@ -305,7 +329,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         borderRadius: 10,
         flexDirection: 'row',
-        justifyContent: "center",
+        justifyContent: 'space-between',
         height: 40
     },
     textLesson: {
