@@ -1,10 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 
 import {
     StyleSheet,
     Image,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert
 } from "react-native";
+
 import {
     View,
     Text,
@@ -14,9 +16,63 @@ import {
     Textarea
 } from 'native-base';
 import {ProfileContext} from "../context/data/profile/profileContext";
+import * as ImagePicker from 'expo-image-picker';
+import { ReactNativeFile } from "apollo-upload-client";
 
 export const ProfileEdit = () => {
     const { fields, setFields } = useContext(ProfileContext);
+
+    const pickImage = async () => {
+        const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Sorry, we need camera roll permissions to make this work!');
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if(!result.cancelled){
+
+        }
+    };
+
+    const cameraImage = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Sorry, we need camera permissions to make this work!');
+        }
+
+        let result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+    }
+
+    const alert = () => Alert.alert(
+        "Change photo",
+        "Choose one of methods",
+        [
+            {
+                text: "Gallery",
+                onPress: () => pickImage()
+            },
+            {
+                text: "Camera",
+                onPress: () => cameraImage()
+            }
+        ],
+        {
+            cancelable: false
+        }
+    );
+
+
 
     return(
         <>
@@ -29,7 +85,7 @@ export const ProfileEdit = () => {
                 <View style={{alignItems: 'center'}}>
                     <TouchableOpacity
                         style={{width: 200}}
-                        onPress={null}
+                        onPress={() => alert()}
                     >
                         <Image
                             style={{height: 200, width: 200}}

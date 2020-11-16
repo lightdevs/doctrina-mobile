@@ -12,14 +12,13 @@ export const ProfileState = ({children}) => {
         country: '',
         city: '',
         institution: '',
-        description: ''
+        description: '',
+        photo: null
     });
 
-    useEffect(() => {
-        setFields({
-            ...state
-        })
-    }, [state])
+    useEffect(() => setFields({
+        ...state
+    }), [state])
 
     const isChange = () => {
         Object.keys(fields).map((key) => {

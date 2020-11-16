@@ -55,7 +55,12 @@ export const ProfileShow = () => {
                         <TouchableOpacity
                             onPress={() => setFlip(true)}
                         >
-                            <UserAvatar size={100} name={profileState.name && `${profileState.name} ${profileState.surname}`} style={{marginRight: 10}}/>
+                            <UserAvatar
+                                size={100}
+                                name={profileState.name && `${profileState.name} ${profileState.surname}`}
+                                style={{marginRight: 10}}
+                                src={profileState.photo}
+                            />
                         </TouchableOpacity>
                         <View style={{justifyContent: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>

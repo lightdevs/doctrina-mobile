@@ -11,6 +11,7 @@ export const REGISTER = gql`
             city
             institution
             description
+            photo
             token
         }
     }
@@ -27,6 +28,7 @@ export const LOGIN = gql`
             city
             institution
             description
+            photo
             token
         }
     }
@@ -131,6 +133,14 @@ export const GET_COURSE_MATERIALS = gql`
             title
             searchTitle
             mimetype
+        }
+    }
+`
+
+export const UPDATE_AVATAR = gql`
+    mutation UpdateAvatar($id: String!, $file: Upload!){
+        uploadProfilePic(personId: $id, file: $file){
+            scalar
         }
     }
 `

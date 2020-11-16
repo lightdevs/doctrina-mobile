@@ -6,10 +6,10 @@ import {
     ApolloClient,
     InMemoryCache,
     ApolloProvider,
-    HttpLink,
-    ApolloLink,
-    concat
+    ApolloLink
 } from "@apollo/client";
+import { createUploadLink } from "apollo-upload-client";
+import { setContext } from "@apollo/client/link/context";
 
 import { getCash} from "./util";
 import { AUTH_TOKEN } from "./cashItems";
@@ -33,20 +33,21 @@ export default function App() {
             .catch(() => {});
     }, []);
 
-    const httpLink = new HttpLink({ uri: "http://192.168.0.106:5000/graphql" });
+    const uri = { uri: "http://192.168.0.106:5000/graphql" };
 
-    const authMiddleware = new ApolloLink(async (operation, forward) => {
-        operation.setContext({
+    const uploadLink = createUploadLink(uri);
+
+    const authLink = setContext(async (_, { headers }) => {
+        return {
             headers: {
+                ...headers,
                 authorization: await getCash(AUTH_TOKEN),
             }
-        });
-
-        return forward(operation);
-    })
+        }
+    });
 
     const client = new ApolloClient({
-        link: concat(authMiddleware, httpLink),
+        link: authLink.concat(uploadLink),
         cache: new InMemoryCache(),
         credentials: "include"
     });

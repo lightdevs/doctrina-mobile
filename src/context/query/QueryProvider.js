@@ -11,7 +11,7 @@ import {
     GET_TEACHER,
     UPDATE_PROFILE,
     GET_COURSE_LESSONS,
-    GET_COURSE_MATERIALS
+    GET_COURSE_MATERIALS, UPDATE_AVATAR
 } from "./query"
 
 import { setCash } from "../../../util";
@@ -88,6 +88,8 @@ export const QueryProvider = ({children}) => {
         }
     })
 
+    const [updateAvatar] = useMutation(UPDATE_AVATAR)
+
     const registerMutation = async ({variables}) => {
         await register({variables: variables});
     }
@@ -116,6 +118,10 @@ export const QueryProvider = ({children}) => {
         await getCourseMaterials({variables: variables});
     }
 
+    const updateAvatarMutation = async ({variables}) => {
+        await updateAvatar({variables: variables});
+    }
+
     return (
         <QueryContext.Provider value={{
             login: loginMutation,
@@ -124,7 +130,8 @@ export const QueryProvider = ({children}) => {
             getCourse: getCourseQuery,
             updatePerson: updatePersonMutation,
             getCourseLessons: getCourseLessonsQuery,
-            getCourseMaterials: getCourseMaterialsQuery
+            getCourseMaterials: getCourseMaterialsQuery,
+            updateAvatar: updateAvatarMutation
         }}>
             {children}
         </QueryContext.Provider>
