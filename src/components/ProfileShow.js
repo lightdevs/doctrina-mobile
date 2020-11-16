@@ -14,11 +14,13 @@ import FlipCard from "react-native-flip-card";
 import UserAvatar from "react-native-user-avatar";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProfileContext } from "../context/data/profile/profileContext";
+import { AuthContext } from "../context/auth/authContext";
 
 const width = Dimensions.get('window').width;
 
 export const ProfileShow = () => {
-    const { flip, setFlip } = useContext(ProfileContext)
+    const { flip, setFlip, profileState } = useContext(ProfileContext)
+    const { signOut } = useContext(AuthContext);
 
     const alert = () => Alert.alert(
         "LOG OUT",
@@ -26,7 +28,7 @@ export const ProfileShow = () => {
         [
             {
                 text: 'OK',
-                onPress: () => null,
+                onPress: () => signOut(),
 
             },
             {
@@ -53,11 +55,11 @@ export const ProfileShow = () => {
                         <TouchableOpacity
                             onPress={() => setFlip(true)}
                         >
-                            <UserAvatar size={100} name={"John Snow"} style={{marginRight: 10}}/>
+                            <UserAvatar size={100} name={profileState.name && `${profileState.name} ${profileState.surname}`} style={{marginRight: 10}}/>
                         </TouchableOpacity>
                         <View style={{justifyContent: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>
-                                {"John"} {"Snow"}
+                                {profileState.name} {profileState.surname}
                             </Text>
                             <Text style={{fontWeight: 'bold', fontSize: 13}}>
                                 {"Student"}
@@ -84,7 +86,7 @@ export const ProfileShow = () => {
                             colors={['rgba(0,0,0,0.00)', 'rgba(0,0,0,0.25)']}
                         >
                             <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-                                {"John"} {"Snow"}
+                                {profileState.name} {profileState.surname}
                             </Text>
                             <Text style={{fontSize: 15, fontWeight: 'bold', color: 'white'}}>
                                 {"Student"}
@@ -107,7 +109,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {"john.snow@nure.ua"}
+                            {profileState.email}
                         </Text>
                     </View>
                 </View>
@@ -119,7 +121,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {"Ukraine"}
+                            {profileState.country}
                         </Text>
                     </View>
                 </View>
@@ -131,7 +133,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {"Kharkiv"}
+                            {profileState.city}
                         </Text>
                     </View>
                 </View>
@@ -145,24 +147,12 @@ export const ProfileShow = () => {
                 <View style={styles.content}>
                     <View style={{width: 120}}>
                         <Text>
-                            {"Type of education institution:"}
-                        </Text>
-                    </View>
-                    <View style={{justifyContent: 'center'}}>
-                        <Text>
-                            {"University"}
-                        </Text>
-                    </View>
-                </View>
-                <View style={styles.content}>
-                    <View style={{width: 120}}>
-                        <Text>
                             {"Educational institution:"}
                         </Text>
                     </View>
                     <View style={{justifyContent: 'center'}}>
                         <Text>
-                            {"KhNURE"}
+                            {profileState.institution}
                         </Text>
                     </View>
                 </View>
@@ -199,7 +189,7 @@ export const ProfileShow = () => {
                 </View>
                 <View>
                     <Text>
-                        {"Description"}
+                        {profileState.description}
                     </Text>
                 </View>
             </View>

@@ -3,41 +3,48 @@ import { useLazyQuery, useMutation } from "@apollo/client";
 
 import { QueryContext } from "./queryContext";
 import { AuthContext } from "../auth/authContext";
-import {REGISTER, LOGIN, GET_ALL_COURSES, GET_COURSE, GET_TEACHER} from "./query"
+import {
+    REGISTER,
+    LOGIN,
+    GET_ALL_COURSES,
+    GET_COURSE,
+    GET_TEACHER,
+    UPDATE_PROFILE,
+    GET_COURSE_LESSONS,
+    GET_COURSE_MATERIALS
+} from "./query"
 
-import {setCash} from "../../../util";
-import {USER_ID} from "../../../cashItems";
-import {ListCourseContext} from "../data/listCourse/listCourseContext";
-import {CourseContext} from "../data/course/courseContext";
+import { setCash } from "../../../util";
+import { USER_ID } from "../../../cashItems";
+import { ListCourseContext } from "../data/listCourse/listCourseContext";
+import { CourseContext } from "../data/course/courseContext";
+import { ProfileContext } from "../data/profile/profileContext";
 
 export const QueryProvider = ({children}) => {
     const { signIn } = useContext(AuthContext);
     const { addCourses } = useContext(ListCourseContext);
-    const { setCourse, setTeacher } = useContext(CourseContext);
+    const { setCourse, setTeacher, setCourseLessons, setCourseMaterials } = useContext(CourseContext);
+    const { setProfileState } = useContext(ProfileContext);
 
     const [register] = useMutation(REGISTER, {
-        onCompleted: ((data) => {
+        onCompleted: async (data) => {
             if(data.register){
-                Promise.all(
-                    [
-                        setCash(USER_ID, data.register._id)
-                    ]
-                )
-                    .catch();
-
+                await setCash(USER_ID, data.register._id)
+                setProfileState(data.register);
                 signIn(data.register.token)
                     .catch((e) => {
                         return e;
                     });
             }
-        })
+        }
     });
 
     const [login] = useMutation(LOGIN, {
         onCompleted: async (data) => {
             if(data.login){
-                await setCash(USER_ID, data.login._id),
-                signIn(data.login.token)
+                await setCash(USER_ID, data.login._id);
+                setProfileState(data.login);
+                signIn(data.login.token);
             }
         }
     });
@@ -52,12 +59,32 @@ export const QueryProvider = ({children}) => {
         onCompleted: (data) => {
             setCourse(data.courseById.course);
             getTeacherCourse({variables: {id: data.courseById.course.teacher}});
+            getCourseMaterials({variables: {id: data.courseById.course._id}});
+            getCourseLessons({variables: {id: data.courseById.course._id}})
         }
     })
 
     const [getTeacherCourse] = useLazyQuery(GET_TEACHER, {
         onCompleted: (data) => {
             setTeacher(data.personById.person);
+        }
+    })
+
+    const [updatePerson] = useMutation(UPDATE_PROFILE, {
+        onCompleted: (data) => {
+            setProfileState(data.updatePerson);
+        }
+    })
+
+    const [getCourseLessons] = useLazyQuery(GET_COURSE_LESSONS, {
+        onCompleted: (data) => {
+            setCourseLessons(data.lessonsByCourse);
+        }
+    })
+
+    const [getCourseMaterials] = useLazyQuery(GET_COURSE_MATERIALS, {
+        onCompleted: (data) => {
+            setCourseMaterials(data.filesByCourse);
         }
     })
 
@@ -77,12 +104,27 @@ export const QueryProvider = ({children}) => {
         await getCourse({variables: variables});
     }
 
+    const updatePersonMutation = async ({variables}) => {
+        await updatePerson({variables: variables});
+    }
+
+    const getCourseLessonsQuery = async ({variables}) => {
+        await getCourseLessons({variables: variables});
+    }
+
+    const getCourseMaterialsQuery = async ({variables}) => {
+        await getCourseMaterials({variables: variables});
+    }
+
     return (
         <QueryContext.Provider value={{
             login: loginMutation,
             register: registerMutation,
             getAllCourses: getAllCoursesQuery,
-            getCourse: getCourseQuery
+            getCourse: getCourseQuery,
+            updatePerson: updatePersonMutation,
+            getCourseLessons: getCourseLessonsQuery,
+            getCourseMaterials: getCourseMaterialsQuery
         }}>
             {children}
         </QueryContext.Provider>

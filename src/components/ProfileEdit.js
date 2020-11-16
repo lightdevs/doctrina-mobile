@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
 
 import {
     StyleSheet,
@@ -13,8 +13,11 @@ import {
     Input,
     Textarea
 } from 'native-base';
+import {ProfileContext} from "../context/data/profile/profileContext";
 
 export const ProfileEdit = () => {
+    const { fields, setFields } = useContext(ProfileContext);
+
     return(
         <>
             <View style={styles.viewPart}>
@@ -46,26 +49,51 @@ export const ProfileEdit = () => {
                     <Item style={styles.content} rounded>
                         <Input
                             placeholder={"Name"}
+                            value={fields.name}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    name: value
+                            })}
                         />
                     </Item>
                     <Item style={styles.content} rounded>
                         <Input
                             placeholder={"Surname"}
+                            value={fields.surname}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    surname: value
+                            })}
                         />
                     </Item>
                     <Item style={styles.content} rounded>
                         <Input
                             placeholder={"E-mail"}
+                            value={fields.email}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    email: value
+                            })}
                         />
                     </Item>
                     <Item style={styles.content} rounded>
                         <Input
                             placeholder={"Country"}
+                            value={fields.country}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    country: value
+                            })}
                         />
                     </Item>
                     <Item style={styles.content} rounded>
                         <Input
                             placeholder={"City"}
+                            value={fields.city}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    city: value
+                            })}
                         />
                     </Item>
                 </Form>
@@ -79,12 +107,12 @@ export const ProfileEdit = () => {
                 <Form>
                     <Item style={styles.content} rounded>
                         <Input
-                            placeholder={"Type of education institution"}
-                        />
-                    </Item>
-                    <Item style={styles.content} rounded>
-                        <Input
                             placeholder={"Educational institution"}
+                            value={fields.institution}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    institution: value
+                            })}
                         />
                     </Item>
                     <Item style={styles.content} rounded>
@@ -109,6 +137,11 @@ export const ProfileEdit = () => {
                     <Item style={[styles.content, {borderRadius: 10}]} rounded>
                         <Textarea
                             placeholder={"Description"}
+                            value={fields.description}
+                            onChangeText={(value) => setFields({
+                                    ...fields,
+                                    description: value
+                            })}
                             rowSpan={5}
                         />
                     </Item>

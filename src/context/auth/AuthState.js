@@ -2,11 +2,11 @@ import React, { useReducer, useEffect } from 'react';
 import { AuthContext } from "./authContext";
 import { authReducer } from "./authReducer";
 import { LOG_IN, LOG_OUT } from '../types';
-import {setCash, removeCash, getCash} from "../../../util";
+import { setCash, removeCash, getCash } from "../../../util";
 import { AUTH_TOKEN } from "../../../cashItems";
 
 export const AuthState = ({children}) => {
-    const [state, dispatch] = useReducer(authReducer, {token: "null"});
+    const [state, dispatch] = useReducer(authReducer, {token: null});
 
     const signIn = (token) => {
         setCash(AUTH_TOKEN, token)
@@ -17,14 +17,9 @@ export const AuthState = ({children}) => {
         });
     }
 
-    // useEffect(() => {
-    //     if(!!getCash(AUTH_TOKEN)){
-    //         signIn(getCash(AUTH_TOKEN));
-    //     }
-    // }, []);
-
-    const signOut = async () => {
-        await removeCash(AUTH_TOKEN);
+    const signOut = () => {
+        removeCash(AUTH_TOKEN)
+            .catch();
         dispatch({type: LOG_OUT});
     }
 

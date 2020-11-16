@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
@@ -9,94 +9,12 @@ import {
     Text
 } from 'native-base'
 import { CourseContext } from "../context/data/course/courseContext";
+import { useFocusEffect } from "@react-navigation/native";
+import TextTicker from "react-native-text-ticker";
+import FlipCard from "react-native-flip-card";
 
-export const CourseScreen = () => {
+export const CourseScreen = ({navigation}) => {
     const { courseState } = useContext(CourseContext);
-
-    const params = {
-        links: [
-            {
-                name: "Zoom",
-                ref: "https://zoom.com"
-            },
-            {
-                name: "Google meet",
-                ref: "https://google-meet.com"
-            }
-        ],
-        lessons: [
-            {
-                type: "Laboratory",
-                topic: "SRS-document",
-                mark: 10,
-                date: "01.09.2020 7:45",
-                status: "Passed"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Passes"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            }
-        ],
-        materials: [
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            }
-        ]
-    }
-
-    const {
-        links,
-        lessons,
-        materials
-    } = params;
 
     const [show, setShow] = useState({
         link: true,
@@ -105,41 +23,58 @@ export const CourseScreen = () => {
         lesson: true
     });
 
+    useFocusEffect(useCallback(() => {
+        navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
+            headerRight: null
+        });
+    }), []);
+
     return (
         <ScrollView style={{backgroundColor: '#ECECEC'}}>
-            <View style={[styles.viewPart, { marginTop: 5, flexDirection: "row", justifyContent: 'space-between'}]}>
+            <FlipCard
+                style={[styles.viewPart, { marginTop: 10, justifyContent: 'center', height: 100}]}
+                flipHorizontal={false}
+                flipVertical={true}
+                friction={6}
+            >
                 <View style={{justifyContent: 'center'}}>
-                    <Text style={{color: "lightblue", fontSize:40, fontWeight: "bold"}}>
+                    <TextTicker
+                        style={{color: "lightblue", fontSize:40, fontWeight: "bold"}}
+                        loop
+                        bounce={false}
+                        marqueeDelay={1000}
+                        scrollSpeed={250}
+                    >
                         {courseState.title}
-                    </Text>
+                    </TextTicker>
                 </View>
                 <View style={{justifyContent: "center"}}>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Identifier: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
+                        <Text>
                             {courseState._id}
                         </Text>
                     </Text>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Teacher: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
-                            {courseState.teacher}
+                        <Text>
+                            {courseState.infoTeacher}
                         </Text>
                     </Text>
                     <Text>
-                        <Text style={{fontWeight: "bold", fontSize: 11}}>
+                        <Text style={{fontWeight: "bold"}}>
                             {"Date: "}
                         </Text>
-                        <Text style={{fontSize: 11}}>
+                        <Text>
                             {courseState.dateStart && (new Date(courseState.dateStart)).toString()} - {courseState.dateStart && (new Date(courseState.dateEnd)).toString()}
                         </Text>
                     </Text>
                 </View>
-            </View>
+            </FlipCard>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
@@ -153,7 +88,7 @@ export const CourseScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 { show.link && <View>
-                    {links.map((link, index) => (
+                    {courseState.links.map((link, index) => (
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
@@ -163,7 +98,7 @@ export const CourseScreen = () => {
                                     <Text style={{fontWeight: "bold", fontSize: 13}}>{link.name}: </Text>
                                 </View>
                                 <View style={{flex: 1}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{link.ref}</Text>
+                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{link.link}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -183,7 +118,7 @@ export const CourseScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 {show.material && <View>
-                    {materials.map((material, index) => (
+                    {courseState.materials.map((material, index) => (
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
@@ -234,21 +169,21 @@ export const CourseScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 {show.lesson && <View>
-                    {lessons.map((lesson, index) =>
+                    {courseState.lessons.map((lesson, index) =>
                         <View style={styles.containerLesson} key={index}>
                             <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.type}
+                                    {"Practical"}
                                 </Text>
                             </View>
                             <View style={{width: "30%", alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.topic}
+                                    {lesson.title}
                                 </Text>
                             </View>
                             <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.date}
+                                    {lesson.dateStart}
                                 </Text>
                             </View>
                             <View style={{width: "10%", alignItems: "center", justifyContent: "center"}}>
@@ -265,7 +200,7 @@ export const CourseScreen = () => {
                                 justifyContent: "center"
                             }}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.status}
+                                    {"Passed"}
                                 </Text>
                             </View>
                         </View>)}
@@ -284,10 +219,10 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        fontWeight: "bold"
+        fontWeight: 'bold'
     },
     button: {
-        width: "100%",
+        width: '100%',
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -297,7 +232,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         padding: 5,
         borderRadius: 10,
-        justifyContent: "space-between",
+        justifyContent: 'space-between',
         flexDirection: 'row'
     },
     containerLesson: {
@@ -305,11 +240,11 @@ const styles = StyleSheet.create({
         marginTop: 10,
         borderRadius: 10,
         flexDirection: 'row',
-        justifyContent: "center",
+        justifyContent: 'center',
         height: 40
     },
     textLesson: {
         fontSize: 12,
-        textAlign: "center"
+        textAlign: 'center'
     }
 });

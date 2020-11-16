@@ -17,6 +17,7 @@ import {QueryContext} from "../context/query/queryContext";
 import {ListCourseContext} from "../context/data/listCourse/listCourseContext";
 import {getCash} from "../../util";
 import {USER_ID} from "../../cashItems";
+import TextTicker from "react-native-text-ticker";
 
 export const ListCourseScreen = ({navigation}) => {
     const { getAllCourses, getCourse } = useContext(QueryContext);
@@ -24,10 +25,7 @@ export const ListCourseScreen = ({navigation}) => {
 
     useFocusEffect(useCallback(() => {
         navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
-            headerRight: null,
-            headerStyle: {
-                backgroundColor: "white"
-            }
+            headerRight: null
         });
     }), []);
 
@@ -73,40 +71,40 @@ export const ListCourseScreen = ({navigation}) => {
             <ScrollView>
                 <View style={styles.containerCourses}>
                     {
-                        listCourseState.courses.map(({
-                                      _id,
-                                      title,
-                                      perCentStatus = 50,
-                                      mark = 2,
-                                      maxMark
-                        }) =>
+                        listCourseState.courses.map(({course}) =>
                             <TouchableOpacity
-                                key={_id}
+                                key={course._id}
                                 style={styles.course}
-                                onPress={() => onPressCourse(_id)}
+                                onPress={() => onPressCourse(course._id)}
                             >
-                                <View>
-                                    <Text style={{fontWeight: "bold"}}>
-                                        {title}
-                                    </Text>
+                                <View style={{width: 50}}>
+                                    <TextTicker
+                                        style={{fontWeight: "bold"}}
+                                        loop
+                                        bounce={false}
+                                        marqueeDelay={1000}
+                                        scrollSpeed={250}
+                                    >
+                                        {course.title}
+                                    </TextTicker>
                                 </View>
                                 <View style={{flexDirection: 'row'}}>
                                     <Progress.Bar
-                                        progress={perCentStatus/100}
+                                        progress={40/100}
                                         style={{height: 20, marginRight: 5}}
                                         height={20}
                                     />
                                     <Text style={{color: 'lightgray'}}>
-                                        {`${perCentStatus}%`}
+                                        {`${40}%`}
                                     </Text>
                                 </View>
                                 <View>
                                     <Text>
                                         <Text style={{fontWeight: "bold"}}>
-                                            {mark}
+                                            {course.mark}
                                         </Text>
                                         <Text>
-                                            {`/${maxMark  || "???"}`}
+                                            {`/${course.maxMark  || "???"}`}
                                         </Text>
                                     </Text>
                                 </View>

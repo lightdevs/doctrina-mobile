@@ -41,7 +41,7 @@ export const SignInForm = () => {
                     <Input
                         placeholder={"password"}
                         style={{height: 30}}
-                        secureTextEntry={true}
+                        secureTextEntry={false}
                         value={fields.password}
                         onChangeText={(value) => setFields({
                             ...fields,
@@ -80,7 +80,6 @@ export const SignInForm = () => {
                                     text: e.message
                                 })
                             });
-
                     }}
                 >
                     <Text style={{fontWeight: 'bold'}}>
