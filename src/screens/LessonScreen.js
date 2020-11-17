@@ -1,8 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
-    TouchableOpacity
+    TouchableOpacity, Linking, Alert
 } from 'react-native';
 import {
     View,
@@ -10,41 +10,22 @@ import {
 } from 'native-base'
 import FlipCard from "react-native-flip-card";
 import TextTicker from "react-native-text-ticker";
+import {LessonContext} from "../context/data/lesson/lessonContext";
+import {useFocusEffect} from "@react-navigation/native";
+import dateFormat from 'dateformat';
 
-export const LessonScreen = () => {
+export const LessonScreen = ({navigation, route}) => {
+    const { lessonState } = useContext(LessonContext);
+
+    const {title, teacher} = route.params;
+
+    useFocusEffect(useCallback(() => {
+        navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
+            headerRight: null
+        });
+    }), []);
+
     const params = {
-        links: [
-            {
-                name: "Zoom",
-                ref: "https://zoom.com"
-            },
-            {
-                name: "Google meet",
-                ref: "https://google-meet.com"
-            }
-        ],
-        materials: [
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            },
-            {
-                title: "Title",
-                name: "Lection №1",
-                file: "l3.docx"
-            }
-        ],
         tasks: [
             {
                 type: "Laboratory",
@@ -91,9 +72,21 @@ export const LessonScreen = () => {
         ]
     }
 
+    const pressLink = async (link) => {
+        const supported = await Linking.canOpenURL(link);
+
+        if(supported){
+            await Linking.openURL(link);
+        } else {
+            Alert.alert("Breaking url", "Sorry, but I can not open this url");
+        }
+    }
+
+    const generateLink = (fileId) => {
+        return `http://192.168.0.106:5000/download?id=${fileId}`
+    }
+
     const {
-        links,
-        materials,
         tasks
     } = params;
 
@@ -113,19 +106,16 @@ export const LessonScreen = () => {
                         marqueeDelay={1000}
                         scrollSpeed={250}
                     >
-                        {"AofSR"}
+                        {title}
                     </TextTicker>
                     <View style={{flexDirection: 'row'}}>
                         <Text style={{marginRight: 15}}>
                             <Text>
                                 {"Lesson"}
                             </Text>
-                            <Text style={{fontWeight: 'bold'}}>
-                                {"#"}{"4"}
-                            </Text>
                         </Text>
                         <Text>
-                            {"Laboratory"}
+                            {lessonState.type}
                         </Text>
                     </View>
                 </View>
@@ -135,7 +125,7 @@ export const LessonScreen = () => {
                             {"Identifier: "}
                         </Text>
                         <Text>
-                            {"courseState._id"}
+                            {lessonState._id}
                         </Text>
                     </Text>
                     <Text>
@@ -143,7 +133,7 @@ export const LessonScreen = () => {
                             {"Teacher: "}
                         </Text>
                         <Text>
-                            {"courseState.teacher"}
+                            {teacher}
                         </Text>
                     </Text>
                     <Text>
@@ -151,7 +141,13 @@ export const LessonScreen = () => {
                             {"Date: "}
                         </Text>
                         <Text>
-                            {"()"} - {"()"}
+                            {
+                                lessonState.dateStart && (dateFormat(new Date(lessonState.dateStart), "dd.mm.yyyy"))
+                            }
+                            {" - "}
+                            {
+                                lessonState.dateEnd && (dateFormat(new Date(lessonState.dateEnd), "dd.mm.yyyy"))
+                            }
                         </Text>
                     </Text>
                 </View>
@@ -169,20 +165,21 @@ export const LessonScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 <View>
-                    {materials.map((material, index) => (
+                    {lessonState.materials.map((material, index) => (
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
+                            onPress={() => pressLink(generateLink(material._id))}
                         >
                             <View style={{flexDirection: "row"}}>
                                 <View style={{width: 100}}>
                                     <Text style={{fontWeight: "bold", fontSize: 13}}>{material.title}</Text>
                                 </View>
                                 <View style={{width: 150}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.name}</Text>
+                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.description}</Text>
                                 </View>
                                 <View>
-                                    <Text style={{fontSize: 13}}>{material.file}</Text>
+                                    <Text style={{fontSize: 13}}>{material.mimeType}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -202,20 +199,21 @@ export const LessonScreen = () => {
                     </Text>
                 </TouchableOpacity>
                 <View>
-                    {links.map((link, index) => (
+                    {lessonState.links.map((link, index) => (
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
+                            onPress={() => pressLink(link.link)}
                         >
                             <View style={{ flexDirection: "row"}}>
                                 <View style={{width: 100}}>
                                     <Text style={{fontWeight: "bold", fontSize: 13}}>
-                                        {link.name}:
+                                        {link.description}:
                                     </Text>
                                 </View>
                                 <View style={{flex: 1}}>
                                     <Text style={{fontSize: 13, color: 'lightgray'}}>
-                                        {link.ref}
+                                        {link.link}
                                     </Text>
                                 </View>
                             </View>
@@ -237,7 +235,7 @@ export const LessonScreen = () => {
                 </TouchableOpacity>
                 <View>
                     <Text>
-                        {"courseState.description"}
+                        {lessonState.description}
                     </Text>
                 </View>
             </View>

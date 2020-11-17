@@ -11,7 +11,9 @@ export const REGISTER = gql`
             city
             institution
             description
-            photo
+            photo {
+                _id
+            }
             token
         }
     }
@@ -28,7 +30,9 @@ export const LOGIN = gql`
             city
             institution
             description
-            photo
+            photo {
+                fileId
+            }
             token
         }
     }
@@ -56,10 +60,6 @@ export const GET_COURSE = gql`
                 _id
                 title
                 teacher
-                links{
-                    link
-                    title
-                }
                 description
                 dateEnd
                 dateStart
@@ -119,9 +119,11 @@ export const GET_COURSE_LESSONS = gql`
         lessonsByCourse(courseId: $id){
             _id
             title
+            type
             maxMark
             description
             dateStart
+            dateEnd
         }
     }
 `
@@ -131,16 +133,55 @@ export const GET_COURSE_MATERIALS = gql`
         filesByCourse(courseId: $id){
             _id
             title
-            searchTitle
-            mimetype
+            description
+        }
+    }
+`
+
+export const GET_COURSE_LINKS = gql`
+    query GetCourseLinks($id: String!){
+        linksByCourse(id: $id){
+            description
+            link
         }
     }
 `
 
 export const UPDATE_AVATAR = gql`
     mutation UpdateAvatar($id: String!, $file: Upload!){
-        uploadProfilePic(personId: $id, file: $file){
-            scalar
+        uploadProfilePic(personId: $id, file: $file)
+    }
+`
+
+export const GET_LESSON = gql`
+    query GetLesson($id: String!){
+        lessonById(id: $id){
+            _id
+            type
+            description,
+            dateStart
+            dateEnd
+            maxMark
+            title
+        }
+    }
+`
+
+export const GET_LESSON_LINKS = gql`
+    query GetLessonLinks($id: String!){
+        linksByLesson(id: $id){
+            description
+            link
+        }
+    }
+`
+
+export const GET_LESSON_MATERIALS = gql`
+    query GetCourseMaterials($id: String!){
+        filesByLesson(lessonId: $id){
+            _id
+            title
+            description
         }
     }
 `

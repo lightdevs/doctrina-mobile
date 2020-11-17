@@ -19,6 +19,7 @@ import { QueryProvider } from "./src/context/query/QueryProvider";
 import { AuthState } from "./src/context/auth/AuthState";
 import { ListCourseState } from "./src/context/data/listCourse/ListCourseState";
 import { CourseState } from "./src/context/data/course/CourseState";
+import { LessonState } from "./src/context/data/lesson/LessonState";
 import { ProfileState } from "./src/context/data/profile/ProfileState";
 
 export default function App() {
@@ -61,13 +62,15 @@ export default function App() {
             <AuthState>
                 <ListCourseState>
                     <CourseState>
-                        <ProfileState>
-                            <QueryProvider>
-                                <Root>
-                                    <AppNavigation/>
-                                </Root>
-                            </QueryProvider>
-                        </ProfileState>
+                        <LessonState>
+                            <ProfileState>
+                                <QueryProvider>
+                                    <Root>
+                                        <AppNavigation/>
+                                    </Root>
+                                </QueryProvider>
+                            </ProfileState>
+                        </LessonState>
                     </CourseState>
                 </ListCourseState>
             </AuthState>

@@ -11,7 +11,9 @@ import {
     GET_TEACHER,
     UPDATE_PROFILE,
     GET_COURSE_LESSONS,
-    GET_COURSE_MATERIALS, UPDATE_AVATAR
+    GET_COURSE_MATERIALS,
+    UPDATE_AVATAR,
+    GET_COURSE_LINKS, GET_LESSON, GET_LESSON_LINKS
 } from "./query"
 
 import { setCash } from "../../../util";
@@ -19,11 +21,19 @@ import { USER_ID } from "../../../cashItems";
 import { ListCourseContext } from "../data/listCourse/listCourseContext";
 import { CourseContext } from "../data/course/courseContext";
 import { ProfileContext } from "../data/profile/profileContext";
+import { LessonContext } from "../data/lesson/lessonContext";
 
 export const QueryProvider = ({children}) => {
     const { signIn } = useContext(AuthContext);
     const { addCourses } = useContext(ListCourseContext);
-    const { setCourse, setTeacher, setCourseLessons, setCourseMaterials } = useContext(CourseContext);
+    const {
+        setCourse,
+        setTeacher,
+        setCourseLessons,
+        setCourseMaterials,
+        setCourseLinks
+    } = useContext(CourseContext);
+    const { setLesson, setLessonLinks, setLessonMaterials } = useContext(LessonContext);
     const { setProfileState } = useContext(ProfileContext);
 
     const [register] = useMutation(REGISTER, {
@@ -56,11 +66,12 @@ export const QueryProvider = ({children}) => {
     });
 
     const [getCourse] = useLazyQuery(GET_COURSE, {
-        onCompleted: (data) => {
+        onCompleted: async (data) => {
             setCourse(data.courseById.course);
-            getTeacherCourse({variables: {id: data.courseById.course.teacher}});
-            getCourseMaterials({variables: {id: data.courseById.course._id}});
-            getCourseLessons({variables: {id: data.courseById.course._id}})
+            await getTeacherCourse({variables: {id: data.courseById.course.teacher}});
+            await getCourseLessons({variables: {id: data.courseById.course._id}});
+            await getCourseMaterials({variables: {id: data.courseById.course._id}});
+            await getCourseLinks({variables: {id: data.courseById.course._id}});
         }
     })
 
@@ -85,6 +96,32 @@ export const QueryProvider = ({children}) => {
     const [getCourseMaterials] = useLazyQuery(GET_COURSE_MATERIALS, {
         onCompleted: (data) => {
             setCourseMaterials(data.filesByCourse);
+        }
+    })
+
+    const [getCourseLinks] = useLazyQuery(GET_COURSE_LINKS, {
+        onCompleted: (data) => {
+            setCourseLinks(data.linksByCourse);
+        }
+    })
+
+    const [getLesson] = useLazyQuery(GET_LESSON, {
+        onCompleted: async (data) => {
+            setLesson(data.lessonById);
+            await getLessonLinks({variables: {id: data.lessonById._id}});
+            await getLessonMaterials({variables: {id: data.lessonById._id}});
+        }
+    })
+
+    const [getLessonLinks] = useLazyQuery(GET_LESSON_LINKS, {
+        onCompleted: (data) => {
+            setLessonLinks(data.linksByLesson);
+        }
+    })
+
+    const [getLessonMaterials] = useLazyQuery(GET_COURSE_MATERIALS, {
+        onCompleted: (data) => {
+            setLessonMaterials(data.filesByLesson);
         }
     })
 
@@ -118,8 +155,24 @@ export const QueryProvider = ({children}) => {
         await getCourseMaterials({variables: variables});
     }
 
+    const getCourseLinksQuery = async ({variables}) => {
+        await getCourseLinks({variables: variables});
+    }
+
     const updateAvatarMutation = async ({variables}) => {
         await updateAvatar({variables: variables});
+    }
+
+    const getLessonQuery = async ({variables}) => {
+        await getLesson({variables: variables});
+    }
+
+    const getLessonLinksQuery = async ({variables}) => {
+        await getLessonLinks({variables: variables});
+    }
+
+    const getLessonMaterialsQuery = async ({variables}) => {
+        await getLessonMaterials({variables: variables});
     }
 
     return (
@@ -131,7 +184,9 @@ export const QueryProvider = ({children}) => {
             updatePerson: updatePersonMutation,
             getCourseLessons: getCourseLessonsQuery,
             getCourseMaterials: getCourseMaterialsQuery,
-            updateAvatar: updateAvatarMutation
+            getCourseLinks: getCourseLinksQuery,
+            updateAvatar: updateAvatarMutation,
+            getLesson: getLessonQuery
         }}>
             {children}
         </QueryContext.Provider>

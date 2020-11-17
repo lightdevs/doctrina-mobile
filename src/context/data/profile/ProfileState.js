@@ -16,9 +16,11 @@ export const ProfileState = ({children}) => {
         photo: null
     });
 
-    useEffect(() => setFields({
-        ...state
-    }), [state])
+    useEffect(() => {
+        setFields({
+            ...state
+        })
+    }, [state])
 
     const isChange = () => {
         Object.keys(fields).map((key) => {

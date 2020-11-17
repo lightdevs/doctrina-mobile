@@ -41,7 +41,7 @@ export const SignInForm = () => {
                     <Input
                         placeholder={"password"}
                         style={{height: 30}}
-                        secureTextEntry={false}
+                        secureTextEntry={true}
                         value={fields.password}
                         onChangeText={(value) => setFields({
                             ...fields,

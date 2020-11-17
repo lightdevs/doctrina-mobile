@@ -68,7 +68,7 @@ export const ProfileEdit = () => {
             }
         ],
         {
-            cancelable: false
+            cancelable: true
         }
     );
 

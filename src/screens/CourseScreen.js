@@ -2,7 +2,9 @@ import React, { useState, useContext, useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
-    TouchableOpacity
+    TouchableOpacity,
+    Linking,
+    Alert
 } from 'react-native';
 import {
     View,
@@ -12,9 +14,12 @@ import { CourseContext } from "../context/data/course/courseContext";
 import { useFocusEffect } from "@react-navigation/native";
 import TextTicker from "react-native-text-ticker";
 import FlipCard from "react-native-flip-card";
+import dateFormat from 'dateformat';
+import {QueryContext} from "../context/query/queryContext";
 
 export const CourseScreen = ({navigation}) => {
     const { courseState } = useContext(CourseContext);
+    const { getLesson } = useContext(QueryContext);
 
     const [show, setShow] = useState({
         link: true,
@@ -28,6 +33,37 @@ export const CourseScreen = ({navigation}) => {
             headerRight: null
         });
     }), []);
+
+    const onPressLesson = async (id, params) => {
+        getLesson({variables: {id: id}})
+        await navigation.navigate("Lesson", params);
+    }
+
+    const pressLink = async (link) => {
+        const supported = await Linking.canOpenURL(link);
+
+        if(supported){
+            await Linking.openURL(link);
+        } else {
+            Alert.alert("Breaking url", "Sorry, but I can not open this url");
+        }
+    }
+
+    const generateLink = (fileId) => {
+        return `http://192.168.0.106:5000/download?id=${fileId}`
+    }
+
+    const status = (dateStart, dateEnd) => {
+        if(Date.now() < dateStart){
+            return "Upcoming";
+        }
+        else if (Date.now() > dateEnd){
+            return "Completed";
+        }
+        else{
+            return "Ongoing";
+        }
+    }
 
     return (
         <ScrollView style={{backgroundColor: '#ECECEC'}}>
@@ -70,7 +106,15 @@ export const CourseScreen = ({navigation}) => {
                             {"Date: "}
                         </Text>
                         <Text>
-                            {courseState.dateStart && (new Date(courseState.dateStart)).toString()} - {courseState.dateStart && (new Date(courseState.dateEnd)).toString()}
+                            <Text>
+                                {
+                                    courseState.dateStart && (dateFormat(new Date(courseState.dateStart), "dd.mm.yyyy"))
+                                }
+                                {" - "}
+                                {
+                                    courseState.dateEnd && (dateFormat(new Date(courseState.dateEnd), "dd.mm.yyyy"))
+                                }
+                            </Text>
                         </Text>
                     </Text>
                 </View>
@@ -92,10 +136,11 @@ export const CourseScreen = ({navigation}) => {
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
+                            onPress={() => pressLink(link.link)}
                         >
                             <View style={{ flexDirection: "row"}}>
                                 <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{link.name}: </Text>
+                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{link.description}: </Text>
                                 </View>
                                 <View style={{flex: 1}}>
                                     <Text style={{fontSize: 13, color: 'lightgray'}}>{link.link}</Text>
@@ -122,16 +167,17 @@ export const CourseScreen = ({navigation}) => {
                         <TouchableOpacity
                             style={{marginVertical: 5}}
                             key={index}
+                            onPress={() => pressLink(generateLink(material._id))}
                         >
                             <View style={{flexDirection: "row"}}>
                                 <View style={{width: 100}}>
                                     <Text style={{fontWeight: "bold", fontSize: 13}}>{material.title}</Text>
                                 </View>
                                 <View style={{width: 150}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.name}</Text>
+                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.description}</Text>
                                 </View>
                                 <View>
-                                    <Text style={{fontSize: 13}}>{material.file}</Text>
+                                    <Text style={{fontSize: 13}}>{material.mimeType}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -170,10 +216,17 @@ export const CourseScreen = ({navigation}) => {
                 </TouchableOpacity>
                 {show.lesson && <View>
                     {courseState.lessons.map((lesson, index) =>
-                        <View style={styles.containerLesson} key={index}>
+                        <TouchableOpacity
+                            style={styles.containerLesson}
+                            key={index}
+                            onPress={() => onPressLesson(lesson._id, {
+                                title: courseState.title,
+                                teacher: courseState.infoTeacher
+                            })}
+                        >
                             <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {"Practical"}
+                                    {lesson.type}
                                 </Text>
                             </View>
                             <View style={{width: "30%", alignItems: "center", justifyContent: "center"}}>
@@ -183,7 +236,7 @@ export const CourseScreen = ({navigation}) => {
                             </View>
                             <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
                                 <Text style={styles.textLesson}>
-                                    {lesson.dateStart}
+                                    {dateFormat(new Date(lesson.dateStart), "dd.mm.yyyy HH:MM")}
                                 </Text>
                             </View>
                             <View style={{width: "10%", alignItems: "center", justifyContent: "center"}}>
@@ -200,10 +253,10 @@ export const CourseScreen = ({navigation}) => {
                                 justifyContent: "center"
                             }}>
                                 <Text style={styles.textLesson}>
-                                    {"Passed"}
+                                    {status(lesson.dateStart, lesson.dateEnd)}
                                 </Text>
                             </View>
-                        </View>)}
+                        </TouchableOpacity>)}
                 </View>}
             </View>
         </ScrollView>)
