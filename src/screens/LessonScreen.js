@@ -1,23 +1,46 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
-    TouchableOpacity, Linking, Alert
+    TouchableOpacity
 } from 'react-native';
 import {
     View,
-    Text
+    Text,
+    Spinner
 } from 'native-base'
 import FlipCard from "react-native-flip-card";
 import TextTicker from "react-native-text-ticker";
-import {LessonContext} from "../context/data/lesson/lessonContext";
 import {useFocusEffect} from "@react-navigation/native";
 import dateFormat from 'dateformat';
+import {gql, useQuery} from "@apollo/client";
+
+import { ListLessonLink } from "../components/ListLessonLink";
+import { ListLessonMaterial } from "../components/ListLessonMaterial";
+import { ListLessonTask } from "../components/ListLessonTask";
+
+export const GET_LESSON = gql`
+    query GetLesson($id: String!){
+        lessonById(id: $id){
+            _id
+            type
+            description,
+            dateStart
+            dateEnd
+            maxMark
+            title
+        }
+    }
+`
 
 export const LessonScreen = ({navigation, route}) => {
-    const { lessonState } = useContext(LessonContext);
+    const {loading, data} = useQuery(GET_LESSON, {
+        variables: {
+            id: route.params.id
+        }
+    });
 
-    const {title, teacher} = route.params;
+    const {id, title, teacher} = route.params;
 
     useFocusEffect(useCallback(() => {
         navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
@@ -25,70 +48,11 @@ export const LessonScreen = ({navigation, route}) => {
         });
     }), []);
 
-    const params = {
-        tasks: [
-            {
-                type: "Laboratory",
-                topic: "SRS-document",
-                mark: 10,
-                date: "01.09.2020 7:45",
-                status: "Passed"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Passes"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            }
-        ]
+
+
+    if(loading){
+        return <Spinner/>
     }
-
-    const pressLink = async (link) => {
-        const supported = await Linking.canOpenURL(link);
-
-        if(supported){
-            await Linking.openURL(link);
-        } else {
-            Alert.alert("Breaking url", "Sorry, but I can not open this url");
-        }
-    }
-
-    const generateLink = (fileId) => {
-        return `http://192.168.0.106:5000/download?id=${fileId}`
-    }
-
-    const {
-        tasks
-    } = params;
 
     return (
         <ScrollView style={{backgroundColor: '#ECECEC'}}>
@@ -115,7 +79,7 @@ export const LessonScreen = ({navigation, route}) => {
                             </Text>
                         </Text>
                         <Text>
-                            {lessonState.type}
+                            {data.lessonById.type}
                         </Text>
                     </View>
                 </View>
@@ -125,7 +89,7 @@ export const LessonScreen = ({navigation, route}) => {
                             {"Identifier: "}
                         </Text>
                         <Text>
-                            {lessonState._id}
+                            {id}
                         </Text>
                     </Text>
                     <Text>
@@ -133,7 +97,7 @@ export const LessonScreen = ({navigation, route}) => {
                             {"Teacher: "}
                         </Text>
                         <Text>
-                            {teacher}
+                            {teacher.name} {teacher.surname}
                         </Text>
                     </Text>
                     <Text>
@@ -142,50 +106,16 @@ export const LessonScreen = ({navigation, route}) => {
                         </Text>
                         <Text>
                             {
-                                lessonState.dateStart && (dateFormat(new Date(lessonState.dateStart), "dd.mm.yyyy"))
+                                data.lessonById.dateStart && (dateFormat(new Date(data.lessonById.dateStart), "dd.mm.yyyy"))
                             }
                             {" - "}
                             {
-                                lessonState.dateEnd && (dateFormat(new Date(lessonState.dateEnd), "dd.mm.yyyy"))
+                                data.lessonById.dateEnd && (dateFormat(new Date(data.lessonById.dateEnd), "dd.mm.yyyy"))
                             }
                         </Text>
                     </Text>
                 </View>
             </FlipCard>
-            <View style={styles.viewPart}>
-                <TouchableOpacity
-                    style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={null}
-                >
-                    <Text style={styles.title}>
-                        {"Materials:"}
-                    </Text>
-                    <Text style={{fontSize: 20, marginRight: 5}}>
-                        {"+"}
-                    </Text>
-                </TouchableOpacity>
-                <View>
-                    {lessonState.materials.map((material, index) => (
-                        <TouchableOpacity
-                            style={{marginVertical: 5}}
-                            key={index}
-                            onPress={() => pressLink(generateLink(material._id))}
-                        >
-                            <View style={{flexDirection: "row"}}>
-                                <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{material.title}</Text>
-                                </View>
-                                <View style={{width: 150}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.description}</Text>
-                                </View>
-                                <View>
-                                    <Text style={{fontSize: 13}}>{material.mimeType}</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
@@ -198,28 +128,21 @@ export const LessonScreen = ({navigation, route}) => {
                         {"+"}
                     </Text>
                 </TouchableOpacity>
-                <View>
-                    {lessonState.links.map((link, index) => (
-                        <TouchableOpacity
-                            style={{marginVertical: 5}}
-                            key={index}
-                            onPress={() => pressLink(link.link)}
-                        >
-                            <View style={{ flexDirection: "row"}}>
-                                <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>
-                                        {link.description}:
-                                    </Text>
-                                </View>
-                                <View style={{flex: 1}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>
-                                        {link.link}
-                                    </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                <ListLessonLink params={{id}}/>
+            </View>
+            <View style={styles.viewPart}>
+                <TouchableOpacity
+                    style={{justifyContent: "space-between", flexDirection: 'row'}}
+                    onPress={null}
+                >
+                    <Text style={styles.title}>
+                        {"Materials:"}
+                    </Text>
+                    <Text style={{fontSize: 20, marginRight: 5}}>
+                        {"+"}
+                    </Text>
+                </TouchableOpacity>
+                <ListLessonMaterial params={{id}}/>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
@@ -235,7 +158,7 @@ export const LessonScreen = ({navigation, route}) => {
                 </TouchableOpacity>
                 <View>
                     <Text>
-                        {lessonState.description}
+                        {data.lessonById.description}
                     </Text>
                 </View>
             </View>
@@ -260,38 +183,7 @@ export const LessonScreen = ({navigation, route}) => {
                         </Text>
                     </View>
                 </TouchableOpacity>
-                <View>
-                    {tasks.map((task, index) =>
-                        <View style={styles.containerLesson} key={index}>
-                            <View style={{width: 75, alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {task.type}
-                                </Text>
-                            </View>
-                            <View style={{width: 150, alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {task.topic}
-                                </Text>
-                            </View>
-                            <View style={{width: 50, alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {task.mark}
-                                </Text>
-                            </View>
-                            <View style={{
-                                width: 60,
-                                alignItems: "center",
-                                backgroundColor: 'lightblue',
-                                borderTopRightRadius: 10,
-                                borderBottomRightRadius: 10,
-                                justifyContent: "center"
-                            }}>
-                                <Text style={styles.textLesson}>
-                                    {task.status}
-                                </Text>
-                            </View>
-                        </View>)}
-                </View>
+                <ListLessonTask params={{}}/>
             </View>
         </ScrollView>)
 }

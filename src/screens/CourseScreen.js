@@ -1,25 +1,66 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Linking,
-    Alert
 } from 'react-native';
 import {
     View,
-    Text
+    Text,
+    Spinner
 } from 'native-base'
-import { CourseContext } from "../context/data/course/courseContext";
 import { useFocusEffect } from "@react-navigation/native";
+import {gql, useLazyQuery, useQuery} from "@apollo/client";
+import { ListCourseLink } from "../components/ListCourseLink";
+import { ListCourseMaterial } from "../components/ListCourseMaterial";
+import { ListCourseLesson } from "../components/ListCourseLesson";
 import TextTicker from "react-native-text-ticker";
+import dateFormat from "dateformat";
 import FlipCard from "react-native-flip-card";
-import dateFormat from 'dateformat';
-import {QueryContext} from "../context/query/queryContext";
 
-export const CourseScreen = ({navigation}) => {
-    const { courseState } = useContext(CourseContext);
-    const { getLesson } = useContext(QueryContext);
+export const GET_COURSE = gql`
+    query GetCourse($id: String!) {
+        courseById(id: $id, page: 0, count: 0) {
+            course { 
+                _id
+                title
+                teacher
+                description
+                dateEnd
+                dateStart
+            }
+        }
+    }
+`
+
+export const GET_TEACHER = gql`
+    query GetTeacher($id: String!) {
+        personById(id: $id, page: 0, count: 0){
+            person {
+                name
+                surname
+            }
+        }
+    }
+`
+
+export const CourseScreen = ({navigation, route}) => {
+    const {loading: loadingC, data: dataC} = useQuery(GET_COURSE, {
+        variables: {
+            id: route.params.id
+        },
+        onCompleted(data){
+            getTeacher({
+                variables: {
+                    id: dataC.courseById.course.teacher
+                }
+            })
+        }
+    });
+
+    const [getTeacher, {loading: loadingT, data: dataT}] = useLazyQuery(GET_TEACHER, {
+        fetchPolicy: "network-only"
+    });
 
     const [show, setShow] = useState({
         link: true,
@@ -34,35 +75,17 @@ export const CourseScreen = ({navigation}) => {
         });
     }), []);
 
-    const onPressLesson = async (id, params) => {
-        getLesson({variables: {id: id}})
-        await navigation.navigate("Lesson", params);
+
+    const onPressLesson = (params) => {
+        navigation.navigate("Lesson", {
+            ...params,
+            title: dataC.courseById.course.title,
+            teacher: dataT.personById.person
+        });
     }
 
-    const pressLink = async (link) => {
-        const supported = await Linking.canOpenURL(link);
-
-        if(supported){
-            await Linking.openURL(link);
-        } else {
-            Alert.alert("Breaking url", "Sorry, but I can not open this url");
-        }
-    }
-
-    const generateLink = (fileId) => {
-        return `http://192.168.0.106:5000/download?id=${fileId}`
-    }
-
-    const status = (dateStart, dateEnd) => {
-        if(Date.now() < dateStart){
-            return "Upcoming";
-        }
-        else if (Date.now() > dateEnd){
-            return "Completed";
-        }
-        else{
-            return "Ongoing";
-        }
+    if(loadingC){
+        return <Spinner/>
     }
 
     return (
@@ -81,7 +104,7 @@ export const CourseScreen = ({navigation}) => {
                         marqueeDelay={1000}
                         scrollSpeed={250}
                     >
-                        {courseState.title}
+                        {dataC.courseById.course.title}
                     </TextTicker>
                 </View>
                 <View style={{justifyContent: "center"}}>
@@ -90,7 +113,7 @@ export const CourseScreen = ({navigation}) => {
                             {"Identifier: "}
                         </Text>
                         <Text>
-                            {courseState._id}
+                            {dataC.courseById.course._id}
                         </Text>
                     </Text>
                     <Text>
@@ -98,7 +121,7 @@ export const CourseScreen = ({navigation}) => {
                             {"Teacher: "}
                         </Text>
                         <Text>
-                            {courseState.infoTeacher}
+                            {loadingT? "" : dataT && `${dataT.personById.person.name} ${dataT.personById.person.surname}`}
                         </Text>
                     </Text>
                     <Text>
@@ -108,11 +131,11 @@ export const CourseScreen = ({navigation}) => {
                         <Text>
                             <Text>
                                 {
-                                    courseState.dateStart && (dateFormat(new Date(courseState.dateStart), "dd.mm.yyyy"))
+                                    dataC.courseById.course.dateStart && (dateFormat(new Date(dataC.courseById.course.dateStart), "dd.mm.yyyy"))
                                 }
                                 {" - "}
                                 {
-                                    courseState.dateEnd && (dateFormat(new Date(courseState.dateEnd), "dd.mm.yyyy"))
+                                    dataC.courseById.course.dateEnd && (dateFormat(new Date(dataC.courseById.course.dateEnd), "dd.mm.yyyy"))
                                 }
                             </Text>
                         </Text>
@@ -131,24 +154,7 @@ export const CourseScreen = ({navigation}) => {
                         {(show.link)? "-": "+"}
                     </Text>
                 </TouchableOpacity>
-                { show.link && <View>
-                    {courseState.links.map((link, index) => (
-                        <TouchableOpacity
-                            style={{marginVertical: 5}}
-                            key={index}
-                            onPress={() => pressLink(link.link)}
-                        >
-                            <View style={{ flexDirection: "row"}}>
-                                <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{link.description}: </Text>
-                                </View>
-                                <View style={{flex: 1}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{link.link}</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>}
+                <ListCourseLink params={{id: route.params.id}} context={{show}}/>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
@@ -162,27 +168,7 @@ export const CourseScreen = ({navigation}) => {
                         {(show.material)? "-": "+"}
                     </Text>
                 </TouchableOpacity>
-                {show.material && <View>
-                    {courseState.materials.map((material, index) => (
-                        <TouchableOpacity
-                            style={{marginVertical: 5}}
-                            key={index}
-                            onPress={() => pressLink(generateLink(material._id))}
-                        >
-                            <View style={{flexDirection: "row"}}>
-                                <View style={{width: 100}}>
-                                    <Text style={{fontWeight: "bold", fontSize: 13}}>{material.title}</Text>
-                                </View>
-                                <View style={{width: 150}}>
-                                    <Text style={{fontSize: 13, color: 'lightgray'}}>{material.description}</Text>
-                                </View>
-                                <View>
-                                    <Text style={{fontSize: 13}}>{material.mimeType}</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
-                </View>}
+                <ListCourseMaterial params={{id: route.params.id}} context={{show}}/>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
@@ -198,7 +184,7 @@ export const CourseScreen = ({navigation}) => {
                 </TouchableOpacity>
                 {show.desc && <View>
                     <Text>
-                        {courseState.description}
+                        {dataC.courseById.course.description}
                     </Text>
                 </View>}
             </View>
@@ -214,50 +200,7 @@ export const CourseScreen = ({navigation}) => {
                         {(show.lesson)? "-": "+"}
                     </Text>
                 </TouchableOpacity>
-                {show.lesson && <View>
-                    {courseState.lessons.map((lesson, index) =>
-                        <TouchableOpacity
-                            style={styles.containerLesson}
-                            key={index}
-                            onPress={() => onPressLesson(lesson._id, {
-                                title: courseState.title,
-                                teacher: courseState.infoTeacher
-                            })}
-                        >
-                            <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {lesson.type}
-                                </Text>
-                            </View>
-                            <View style={{width: "30%", alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {lesson.title}
-                                </Text>
-                            </View>
-                            <View style={{width: "20%", alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {dateFormat(new Date(lesson.dateStart), "dd.mm.yyyy HH:MM")}
-                                </Text>
-                            </View>
-                            <View style={{width: "10%", alignItems: "center", justifyContent: "center"}}>
-                                <Text style={styles.textLesson}>
-                                    {lesson.mark}
-                                </Text>
-                            </View>
-                            <View style={{
-                                width: "20%",
-                                alignItems: "center",
-                                backgroundColor: 'lightblue',
-                                borderTopRightRadius: 10,
-                                borderBottomRightRadius: 10,
-                                justifyContent: "center"
-                            }}>
-                                <Text style={styles.textLesson}>
-                                    {status(lesson.dateStart, lesson.dateEnd)}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>)}
-                </View>}
+                <ListCourseLesson params={{id: route.params.id}} context={{show}} onPressLesson={onPressLesson}/>
             </View>
         </ScrollView>)
 }

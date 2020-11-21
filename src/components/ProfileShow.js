@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
 
 import {
-    Alert, Dimensions,
-    ImageBackground, StyleSheet,
+    Alert,
+    Dimensions,
+    ImageBackground,
+    StyleSheet,
     TouchableOpacity
 } from "react-native";
 import {
@@ -13,16 +15,17 @@ import {
 import FlipCard from "react-native-flip-card";
 import UserAvatar from "react-native-user-avatar";
 import { LinearGradient } from "expo-linear-gradient";
-import { ProfileContext } from "../context/data/profile/profileContext";
 import { AuthContext } from "../context/auth/authContext";
 
 const width = Dimensions.get('window').width;
 
-export const ProfileShow = () => {
-    const { flip, setFlip, profileState } = useContext(ProfileContext)
+export const ProfileShow = ({params, context}) => {
+    const { flip, setFlip } = context;
     const { signOut } = useContext(AuthContext);
 
-    const alert = () => Alert.alert(
+    const {name, surname, email, country, city, institution, description} = params;
+
+    const alerting = () => Alert.alert(
         "LOG OUT",
         "Are you want sign out?",
         [
@@ -57,14 +60,13 @@ export const ProfileShow = () => {
                         >
                             <UserAvatar
                                 size={100}
-                                name={profileState.name && `${profileState.name} ${profileState.surname}`}
+                                name={name && `${name} ${surname}`}
                                 style={{marginRight: 10}}
-                                src={profileState.photo}
                             />
                         </TouchableOpacity>
                         <View style={{justifyContent: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>
-                                {profileState.name} {profileState.surname}
+                                {name} {surname}
                             </Text>
                             <Text style={{fontWeight: 'bold', fontSize: 13}}>
                                 {"Student"}
@@ -91,7 +93,7 @@ export const ProfileShow = () => {
                             colors={['rgba(0,0,0,0.00)', 'rgba(0,0,0,0.25)']}
                         >
                             <Text style={{fontSize: 20, fontWeight: 'bold', color: 'white'}}>
-                                {profileState.name} {profileState.surname}
+                                {name} {surname}
                             </Text>
                             <Text style={{fontSize: 15, fontWeight: 'bold', color: 'white'}}>
                                 {"Student"}
@@ -114,7 +116,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {profileState.email}
+                            {email}
                         </Text>
                     </View>
                 </View>
@@ -126,7 +128,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {profileState.country}
+                            {country}
                         </Text>
                     </View>
                 </View>
@@ -138,7 +140,7 @@ export const ProfileShow = () => {
                     </View>
                     <View>
                         <Text>
-                            {profileState.city}
+                            {city}
                         </Text>
                     </View>
                 </View>
@@ -157,7 +159,7 @@ export const ProfileShow = () => {
                     </View>
                     <View style={{justifyContent: 'center'}}>
                         <Text>
-                            {profileState.institution}
+                            {institution}
                         </Text>
                     </View>
                 </View>
@@ -194,13 +196,13 @@ export const ProfileShow = () => {
                 </View>
                 <View>
                     <Text>
-                        {profileState.description}
+                        {description}
                     </Text>
                 </View>
             </View>
             <TouchableOpacity
                 style={[styles.viewPart, {alignItems: 'center', borderWidth: 0.5, borderColor: '#ffcccc'}]}
-                onPress={() => alert()}
+                onPress={() => alerting()}
             >
                 <Text style={{fontWeight: 'bold', color: '#ff8080'}}>
                     {"LOG OUT"}

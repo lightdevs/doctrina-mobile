@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LoadingScreen } from './src/screens/LoadingScreen';
 import * as Font from 'expo-font';
 import { Root } from "native-base";
 import {
     ApolloClient,
     InMemoryCache,
-    ApolloProvider,
-    ApolloLink
+    ApolloProvider
 } from "@apollo/client";
 import { createUploadLink } from "apollo-upload-client";
 import { setContext } from "@apollo/client/link/context";
@@ -15,12 +14,8 @@ import { getCash} from "./util";
 import { AUTH_TOKEN } from "./cashItems";
 
 import { AppNavigation } from "./src/navigations/AppNavigation";
-import { QueryProvider } from "./src/context/query/QueryProvider";
 import { AuthState } from "./src/context/auth/AuthState";
-import { ListCourseState } from "./src/context/data/listCourse/ListCourseState";
-import { CourseState } from "./src/context/data/course/CourseState";
-import { LessonState } from "./src/context/data/lesson/LessonState";
-import { ProfileState } from "./src/context/data/profile/ProfileState";
+
 
 export default function App() {
     const [state, setState] = useState({loading: true});
@@ -49,7 +44,28 @@ export default function App() {
 
     const client = new ApolloClient({
         link: authLink.concat(uploadLink),
-        cache: new InMemoryCache(),
+        cache: new InMemoryCache({
+            typePolicies:{
+                Query:{
+                    fields:{
+                        personById: {
+                            keyArgs: false,
+                            merge(exciting= {}, incoming){
+                                if(incoming.courses){
+                                    let courses = exciting.courses || [];
+                                    courses = [...courses, ...incoming.courses];
+                                    return {
+                                        ...incoming,
+                                        courses
+                                    }
+                                }
+                                return exciting
+                            }
+                        }
+                    }
+                }
+            }
+        }),
         credentials: "include"
     });
 
@@ -60,19 +76,9 @@ export default function App() {
     return (
         <ApolloProvider client={client}>
             <AuthState>
-                <ListCourseState>
-                    <CourseState>
-                        <LessonState>
-                            <ProfileState>
-                                <QueryProvider>
-                                    <Root>
-                                        <AppNavigation/>
-                                    </Root>
-                                </QueryProvider>
-                            </ProfileState>
-                        </LessonState>
-                    </CourseState>
-                </ListCourseState>
+                <Root>
+                    <AppNavigation/>
+                </Root>
             </AuthState>
         </ApolloProvider>
     );

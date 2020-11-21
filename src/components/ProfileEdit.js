@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
     StyleSheet,
@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     Alert
 } from "react-native";
-
 import {
     View,
     Text,
@@ -15,12 +14,35 @@ import {
     Input,
     Textarea
 } from 'native-base';
-import {ProfileContext} from "../context/data/profile/profileContext";
+
 import * as ImagePicker from 'expo-image-picker';
 import { ReactNativeFile } from "apollo-upload-client";
+import {gql} from "@apollo/client";
 
-export const ProfileEdit = () => {
-    const { fields, setFields } = useContext(ProfileContext);
+export const UPDATE_AVATAR = gql`
+    mutation UpdateAvatar($id: String!, $file: Upload!){
+        uploadProfilePic(personId: $id, file: $file)
+    }
+`
+
+export const ProfileEdit = ({params, context}) => {
+    const {fields, setFields} = context;
+
+    const {
+        name,
+        surname,
+        email,
+        country,
+        city,
+        institution,
+        description
+    } = params;
+
+    useEffect(() => {
+        setFields({
+            name, surname, email, country, city, institution, description
+        });
+    }, [])
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
@@ -71,8 +93,6 @@ export const ProfileEdit = () => {
             cancelable: true
         }
     );
-
-
 
     return(
         <>
