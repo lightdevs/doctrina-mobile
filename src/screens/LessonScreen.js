@@ -1,73 +1,46 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
     StyleSheet,
     ScrollView,
-    TouchableOpacity,
+    TouchableOpacity
 } from 'react-native';
 import {
     View,
     Text,
     Spinner
 } from 'native-base'
-import { useFocusEffect } from "@react-navigation/native";
-import {gql, useLazyQuery, useQuery} from "@apollo/client";
-import { ListCourseLink } from "../components/ListCourseLink";
-import { ListCourseMaterial } from "../components/ListCourseMaterial";
-import { ListCourseLesson } from "../components/ListCourseLesson";
-import TextTicker from "react-native-text-ticker";
-import dateFormat from "dateformat";
 import FlipCard from "react-native-flip-card";
+import TextTicker from "react-native-text-ticker";
+import {useFocusEffect} from "@react-navigation/native";
+import dateFormat from 'dateformat';
+import {gql, useQuery} from "@apollo/client";
 
-export const GET_COURSE = gql`
-    query GetCourse($id: String!) {
-        courseById(id: $id, page: 0, count: 0) {
-            course { 
-                _id
-                title
-                teacher
-                description
-                dateEnd
-                dateStart
-            }
+import { ListLessonLink } from "../components/ListLessonLink";
+import { ListLessonMaterial } from "../components/ListLessonMaterial";
+import { ListLessonTask } from "../components/ListLessonTask";
+
+export const GET_LESSON = gql`
+    query GetLesson($id: String!){
+        lessonById(id: $id){
+            _id
+            type
+            description,
+            dateStart
+            dateEnd
+            maxMark
+            title
         }
     }
 `
 
-export const GET_TEACHER = gql`
-    query GetTeacher($id: String!) {
-        personById(id: $id, page: 0, count: 0){
-            person {
-                name
-                surname
-            }
-        }
-    }
-`
-
-export const CourseScreen = ({navigation, route}) => {
-    const {loading: loadingC, data: dataC} = useQuery(GET_COURSE, {
+export const LessonScreen = ({navigation, route}) => {
+    const {loading, data} = useQuery(GET_LESSON, {
         variables: {
             id: route.params.id
-        },
-        onCompleted(data){
-            getTeacher({
-                variables: {
-                    id: dataC.courseById.course.teacher
-                }
-            })
         }
     });
 
-    const [getTeacher, {loading: loadingT, data: dataT}] = useLazyQuery(GET_TEACHER, {
-        fetchPolicy: "network-only"
-    });
-
-    const [show, setShow] = useState({
-        link: true,
-        material: true,
-        desc: true,
-        lesson: true
-    });
+    const {id, title, teacher} = route.params;
 
     useFocusEffect(useCallback(() => {
         navigation.dangerouslyGetParent().dangerouslyGetParent().setOptions({
@@ -76,15 +49,8 @@ export const CourseScreen = ({navigation, route}) => {
     }), []);
 
 
-    const onPressLesson = (params) => {
-        navigation.navigate("Lesson", {
-            ...params,
-            title: dataC.courseById.course.title,
-            teacher: dataT.personById.person
-        });
-    }
 
-    if(loadingC){
+    if(loading){
         return <Spinner/>
     }
 
@@ -104,8 +70,18 @@ export const CourseScreen = ({navigation, route}) => {
                         marqueeDelay={1000}
                         scrollSpeed={250}
                     >
-                        {dataC.courseById.course.title}
+                        {title}
                     </TextTicker>
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={{marginRight: 15}}>
+                            <Text>
+                                {"Lesson"}
+                            </Text>
+                        </Text>
+                        <Text>
+                            {data.lessonById.type}
+                        </Text>
+                    </View>
                 </View>
                 <View style={{justifyContent: "center"}}>
                     <Text>
@@ -113,7 +89,7 @@ export const CourseScreen = ({navigation, route}) => {
                             {"Identifier: "}
                         </Text>
                         <Text>
-                            {dataC.courseById.course._id}
+                            {id}
                         </Text>
                     </Text>
                     <Text>
@@ -121,7 +97,7 @@ export const CourseScreen = ({navigation, route}) => {
                             {"Teacher: "}
                         </Text>
                         <Text>
-                            {loadingT? "" : dataT && `${dataT.personById.person.name} ${dataT.personById.person.surname}`}
+                            {teacher.name} {teacher.surname}
                         </Text>
                     </Text>
                     <Text>
@@ -129,15 +105,13 @@ export const CourseScreen = ({navigation, route}) => {
                             {"Date: "}
                         </Text>
                         <Text>
-                            <Text>
-                                {
-                                    dataC.courseById.course.dateStart && (dateFormat(new Date(dataC.courseById.course.dateStart), "dd.mm.yyyy"))
-                                }
-                                {" - "}
-                                {
-                                    dataC.courseById.course.dateEnd && (dateFormat(new Date(dataC.courseById.course.dateEnd), "dd.mm.yyyy"))
-                                }
-                            </Text>
+                            {
+                                data.lessonById.dateStart && (dateFormat(new Date(data.lessonById.dateStart), "dd.mm.yyyy"))
+                            }
+                            {" - "}
+                            {
+                                data.lessonById.dateEnd && (dateFormat(new Date(data.lessonById.dateEnd), "dd.mm.yyyy"))
+                            }
                         </Text>
                     </Text>
                 </View>
@@ -145,62 +119,71 @@ export const CourseScreen = ({navigation, route}) => {
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, link: !show.link})}
+                    onPress={null}
                 >
                     <Text style={styles.title}>
                         {"Links:"}
                     </Text>
                     <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.link)? "-": "+"}
+                        {"+"}
                     </Text>
                 </TouchableOpacity>
-                <ListCourseLink params={{id: route.params.id}} context={{show}}/>
+                <ListLessonLink params={{id}}/>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, material: !show.material})}
+                    onPress={null}
                 >
                     <Text style={styles.title}>
                         {"Materials:"}
                     </Text>
                     <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.material)? "-": "+"}
+                        {"+"}
                     </Text>
                 </TouchableOpacity>
-                <ListCourseMaterial params={{id: route.params.id}} context={{show}}/>
+                <ListLessonMaterial params={{id}}/>
             </View>
             <View style={styles.viewPart}>
                 <TouchableOpacity
                     style={{justifyContent: "space-between", flexDirection: 'row'}}
-                    onPress={() => setShow({...show, desc: !show.desc})}
+                    onPress={null}
                 >
                     <Text style={styles.title}>
                         {"Description:"}
                     </Text>
                     <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.desc)? "-": "+"}
+                        {"+"}
                     </Text>
                 </TouchableOpacity>
-                {show.desc && <View>
+                <View>
                     <Text>
-                        {dataC.courseById.course.description}
+                        {data.lessonById.description}
                     </Text>
-                </View>}
+                </View>
             </View>
             <View style={[styles.viewPart, {backgroundColor: "#F6F6F6"}]}>
                 <TouchableOpacity
                     style={styles.titleLesson}
-                    onPress={() => setShow({...show, lesson: !show.lesson})}
+                    onPress={null}
                 >
-                    <Text style={styles.title}>
-                        {"Lessons:"}
-                    </Text>
-                    <Text style={{fontSize: 20, marginRight: 5}}>
-                        {(show.lesson)? "-": "+"}
-                    </Text>
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={styles.title}>
+                            {"Tasks:"}
+                        </Text>
+                        <View style={{justifyContent: 'flex-end', marginLeft: 5, marginBottom: 3}}>
+                            <Text style={{fontSize: 12}}>
+                                {"(max "}{"10"}{" points)"}
+                            </Text>
+                        </View>
+                    </View>
+                    <View>
+                        <Text style={{fontSize: 20, marginRight: 5}}>
+                            {"+"}
+                        </Text>
+                    </View>
                 </TouchableOpacity>
-                <ListCourseLesson params={{id: route.params.id}} context={{show}} onPressLesson={onPressLesson}/>
+                <ListLessonTask params={{}}/>
             </View>
         </ScrollView>)
 }
@@ -215,10 +198,10 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20,
-        fontWeight: 'bold'
+        fontWeight: "bold"
     },
     button: {
-        width: '100%',
+        width: "100%",
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -228,7 +211,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         padding: 5,
         borderRadius: 10,
-        justifyContent: 'space-between',
+        justifyContent: "space-between",
         flexDirection: 'row'
     },
     containerLesson: {
@@ -236,11 +219,11 @@ const styles = StyleSheet.create({
         marginTop: 10,
         borderRadius: 10,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         height: 40
     },
     textLesson: {
         fontSize: 12,
-        textAlign: 'center'
+        textAlign: "center"
     }
 });

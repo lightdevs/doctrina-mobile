@@ -11,9 +11,17 @@ import {
     Text,
     Toast
 } from 'native-base';
-import {QueryContext} from "../context/query/queryContext";
-import {getCash} from "../../util";
-import {USER_ID} from "../../cashItems";
+import {gql, useMutation} from "@apollo/client";
+import {AuthContext} from "../context/auth/authContext";
+
+const LOGIN = gql`
+    mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+            _id
+            token
+        }
+    }
+`
 
 export const SignInForm = () => {
     const [fields, setFields] = useState({
@@ -21,7 +29,15 @@ export const SignInForm = () => {
         password: ''
     })
 
-    const { login, getAllCourses } = useContext(QueryContext);
+    const { signIn } = useContext(AuthContext);
+
+    const [login] = useMutation(LOGIN, {
+        onCompleted: async (data) => {
+            if(data.login){
+                signIn({token: data.login.token, id: data.login._id});
+            }
+        }
+    });
 
     return (
         <View style={styles.container}>
@@ -72,15 +88,11 @@ export const SignInForm = () => {
                                 password: fields.password
                             }
                         })
-                            .then(async () => {
-                                getAllCourses({variables: {id: await getCash(USER_ID), page: 0}})
-                            })
                             .catch((e) => {
                                 return Toast.show({
                                     text: e.message
                                 })
                             });
-
                     }}
                 >
                     <Text style={{fontWeight: 'bold'}}>

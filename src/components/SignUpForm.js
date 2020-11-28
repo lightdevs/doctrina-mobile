@@ -11,10 +11,41 @@ import {
     Text,
     Toast
 } from 'native-base';
-import {QueryContext} from "../context/query/queryContext";
+import {gql, useMutation} from "@apollo/client";
+import {AuthContext} from "../context/auth/authContext";
+
+const REGISTER = gql`
+    mutation Register($email: String!, $name: String!, $surname: String!, $password: String!) {
+        register(email: $email, name: $name, surname: $surname, password: $password, accountType: "student") {
+            _id
+            email
+            name
+            surname
+            country
+            city
+            institution
+            description
+            photo {
+                _id
+            }
+            token
+        }
+    }
+`
 
 export const SignUpForm = () => {
-    const {register} = useContext(QueryContext);
+    const { signIn } = useContext(AuthContext);
+
+    const [register] = useMutation(REGISTER, {
+        onCompleted: async (data) => {
+            if(data.register){
+                signIn({token: data.register.token, id: data.register._id})
+                    .catch((e) => {
+                        return e;
+                    });
+            }
+        }
+    });
 
     const [fields, setFields] = useState({
        firstName: '',
@@ -162,6 +193,7 @@ export const SignUpForm = () => {
                                 password: fields.password
                             }
                         })
+                            .catch();
                     }}
                 >
                     <Text style={{fontWeight: 'bold'}}>
