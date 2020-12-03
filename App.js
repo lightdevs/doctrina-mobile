@@ -15,6 +15,7 @@ import { AUTH_TOKEN } from "./cashItems";
 
 import { AppNavigation } from "./src/navigations/AppNavigation";
 import { AuthState } from "./src/context/auth/AuthState";
+import { nameServer } from "./src/config";
 
 
 export default function App() {
@@ -29,14 +30,13 @@ export default function App() {
             .catch(() => {});
     }, []);
 
-    const uri = { uri: "http://192.168.0.106:5000/graphql" };
+    const uri = { uri: `${nameServer}/graphql` };
 
     const uploadLink = createUploadLink(uri);
 
-    const authLink = setContext(async (_, { headers }) => {
+    const authLink = setContext(async () => {
         return {
             headers: {
-                ...headers,
                 authorization: await getCash(AUTH_TOKEN),
             }
         }

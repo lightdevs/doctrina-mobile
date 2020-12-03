@@ -12,10 +12,22 @@ const Stack = createStackNavigator();
 export const Courses = () => {
     return (
         <Stack.Navigator>
-            <Stack.Screen name="ListCourse" component={ListCourseScreen}/>
-            <Stack.Screen name="Course" component={CourseScreen}/>
-            <Stack.Screen name="Lesson" component={LessonScreen}/>
-            <Stack.Screen name="Task" component={TaskScreen}/>
+            <Stack.Screen
+                name="ListCourse"
+                component={ListCourseScreen}
+            />
+            <Stack.Screen
+                name="Course"
+                component={CourseScreen}
+            />
+            <Stack.Screen
+                name="Lesson"
+                component={LessonScreen}
+            />
+            <Stack.Screen
+                name="Task"
+                component={TaskScreen}
+            />
         </Stack.Navigator>
     )
 }

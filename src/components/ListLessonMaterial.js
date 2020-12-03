@@ -2,6 +2,7 @@ import React from 'react';
 import {gql, useQuery} from "@apollo/client";
 import {Alert, Linking, TouchableOpacity} from "react-native";
 import {Text, View, Spinner} from "native-base";
+import {nameServer} from "../config";
 
 export const GET_LESSON_MATERIALS = gql`
     query GetCourseMaterials($id: String!){
@@ -31,7 +32,7 @@ export const ListLessonMaterial = ({params}) => {
     }
 
     const generateLink = (fileId) => {
-        return `http://192.168.0.106:5000/download?id=${fileId}`
+        return `${nameServer}/download?id=${fileId}`
     }
 
     if(loading){

@@ -1,78 +1,72 @@
 import React from 'react';
-import {Text, View} from "native-base";
-import {StyleSheet} from "react-native";
+import {Text, View, Spinner} from "native-base";
+import {StyleSheet, TouchableOpacity} from "react-native";
+import {gql, useQuery} from "@apollo/client";
 
-export const ListLessonTask = ({params}) => {
-    const test = {
-        tasks: [
-            {
-                type: "Laboratory",
-                topic: "SRS-document",
-                mark: 10,
-                date: "01.09.2020 7:45",
-                status: "Passed"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Passes"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
-            },
-            {
-                type: "Practical",
-                topic: "Mockups",
-                mark: 10,
-                date: "12.09.2020 9:30",
-                status: "Will pass"
+const GET_LESSON_TASKS = gql`
+    query GetLessonTasks($id: String!){
+        tasksByLesson(id: $id){
+            task{
+                _id,
+                title,
+                description,
+                dateStart,
+                dateEnd,
+                maxMark
             }
-        ]
+            status
+        }
+    }
+`
+
+const setStatus = (status) => {
+    if(status == -1){
+        return "Not answered";
+    }
+    else if (status == 0){
+        return "Not Graded";
+    }
+    else{
+        return "Graded";
+    }
+}
+
+export const ListLessonTask = ({params, onPressTask}) => {
+    const {data, error, loading} = useQuery(GET_LESSON_TASKS, {
+        variables: {
+            id: params.id
+        }
+    })
+
+    if(loading){
+        return <Spinner/>
     }
 
-
-
-    const {
-        tasks
-    } = test;
+    if(error){
+        return <Text>{JSON.stringify(error)}</Text>
+    }
 
     return (
         <View>
-            {tasks.map((task, index) =>
-                <View style={styles.containerLesson} key={index}>
+            {data.tasksByLesson.map(({task, status}) =>
+                <TouchableOpacity
+                    style={styles.containerLesson}
+                    onPress={() => onPressTask({id: task._id})}
+                    key={task._id}
+                >
                     <View style={{width: 75, alignItems: "center", justifyContent: "center"}}>
                         <Text style={styles.textLesson}>
-                            {task.type}
+                            {task.title}
                         </Text>
                     </View>
                     <View style={{width: 150, alignItems: "center", justifyContent: "center"}}>
                         <Text style={styles.textLesson}>
-                            {task.topic}
+                            {task.description}
                         </Text>
                     </View>
                     <View style={{width: 50, alignItems: "center", justifyContent: "center"}}>
                         <Text style={styles.textLesson}>
-                            {task.mark}
+                            {task.maxMark}
                         </Text>
                     </View>
                     <View style={{
@@ -84,10 +78,10 @@ export const ListLessonTask = ({params}) => {
                         justifyContent: "center"
                     }}>
                         <Text style={styles.textLesson}>
-                            {task.status}
+                            {setStatus(status)}
                         </Text>
                     </View>
-                </View>)}
+                </TouchableOpacity>)}
         </View>
     )
 }

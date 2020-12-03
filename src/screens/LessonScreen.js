@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, {useCallback, useContext} from 'react';
 import {
     StyleSheet,
     ScrollView,
@@ -18,23 +18,28 @@ import {gql, useQuery} from "@apollo/client";
 import { ListLessonLink } from "../components/ListLessonLink";
 import { ListLessonMaterial } from "../components/ListLessonMaterial";
 import { ListLessonTask } from "../components/ListLessonTask";
+import {AuthContext} from "../context/auth/authContext";
 
 export const GET_LESSON = gql`
     query GetLesson($id: String!){
         lessonById(id: $id){
-            _id
-            type
+            _id,
+            type,
             description,
-            dateStart
-            dateEnd
-            maxMark
-            title
+            dateStart,
+            dateEnd,
+            maxMark,
+            title,
+            visitors
         }
     }
 `
 
+
 export const LessonScreen = ({navigation, route}) => {
-    const {loading, data} = useQuery(GET_LESSON, {
+    const {auth} = useContext(AuthContext)
+
+    const {loading, error, data} = useQuery(GET_LESSON, {
         variables: {
             id: route.params.id
         }
@@ -48,10 +53,58 @@ export const LessonScreen = ({navigation, route}) => {
         });
     }), []);
 
+    const onPressTask = (params) => {
+        navigation.navigate("Task", {
+            ...params,
+            title: title,
+            teacher: teacher
+        });
+    }
+
 
 
     if(loading){
         return <Spinner/>
+    }
+
+    if(error){
+        return <Text>{JSON.stringify(error)}</Text>
+    }
+
+    const statusVisit = () => {
+        if(data.lessonById.visitors.indexOf(auth.id) === -1) {
+            if(Date.now() > data.lessonById.dateStart && Date.now() < data.lessonById.dateEnd){
+                return 0
+            }
+            else{
+                return -1
+            }
+        }
+        else{
+            return 1
+        }
+    }
+
+    const displayVisit = () => {
+        switch (statusVisit()){
+            case -1:
+                return "Not visited";
+            case 0:
+                return "Mark visit";
+            case 1:
+                return "Visited"
+        }
+    }
+
+    const colorBtnVisit = () => {
+        switch (statusVisit()){
+            case -1:
+                return "orange";
+            case 0:
+                return "lightyellow";
+            case 1:
+                return "lightgreen"
+        }
     }
 
     return (
@@ -106,11 +159,11 @@ export const LessonScreen = ({navigation, route}) => {
                         </Text>
                         <Text>
                             {
-                                data.lessonById.dateStart && (dateFormat(new Date(data.lessonById.dateStart), "dd.mm.yyyy"))
+                                data && (dateFormat(new Date(data.lessonById.dateStart), "dd.mm.yyyy"))
                             }
                             {" - "}
                             {
-                                data.lessonById.dateEnd && (dateFormat(new Date(data.lessonById.dateEnd), "dd.mm.yyyy"))
+                                data && (dateFormat(new Date(data.lessonById.dateEnd), "dd.mm.yyyy"))
                             }
                         </Text>
                     </Text>
@@ -167,15 +220,10 @@ export const LessonScreen = ({navigation, route}) => {
                     style={styles.titleLesson}
                     onPress={null}
                 >
-                    <View style={{flexDirection: 'row'}}>
+                    <View>
                         <Text style={styles.title}>
                             {"Tasks:"}
                         </Text>
-                        <View style={{justifyContent: 'flex-end', marginLeft: 5, marginBottom: 3}}>
-                            <Text style={{fontSize: 12}}>
-                                {"(max "}{"10"}{" points)"}
-                            </Text>
-                        </View>
                     </View>
                     <View>
                         <Text style={{fontSize: 20, marginRight: 5}}>
@@ -183,8 +231,14 @@ export const LessonScreen = ({navigation, route}) => {
                         </Text>
                     </View>
                 </TouchableOpacity>
-                <ListLessonTask params={{}}/>
+                <ListLessonTask params={{id}} onPressTask={onPressTask}/>
             </View>
+            <TouchableOpacity
+                style={[styles.viewPart, {alignItems: "center", padding: 10, backgroundColor: colorBtnVisit()}]}
+                onPress={statusVisit() == 0? (() => {}): (() => {})}
+            >
+                <Text>{displayVisit()}</Text>
+            </TouchableOpacity>
         </ScrollView>)
 }
 

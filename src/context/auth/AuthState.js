@@ -1,30 +1,44 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { AuthContext } from "./authContext";
 import { authReducer } from "./authReducer";
 import { LOG_IN, LOG_OUT } from '../types';
-import { setCash, removeCash } from "../../../util";
+import {setCash, removeCash, getCash} from "../../../util";
 import {AUTH_TOKEN, USER_ID} from "../../../cashItems";
 
 export const AuthState = ({children}) => {
     const [state, dispatch] = useReducer(authReducer, {token: null, id: null});
 
-    const signIn = (params) => {
-        setCash(AUTH_TOKEN, params.token)
+    // useEffect(useCallback(() => {
+    //     getCash(AUTH_TOKEN)
+    //         .then((value => {
+    //             if(value){
+    //                 (async () => {
+    //                     signIn({token: await getCash(AUTH_TOKEN), id: await getCash(USER_ID)});
+    //                 })()
+    //             }
+    //         }))
+    //
+    // }, []))
+
+    const signIn = ({token, id}) => {
+        setCash(AUTH_TOKEN, token)
+            .then(() => {
+                dispatch({
+                    type: LOG_IN,
+                    payload: {token, id}
+                });
+            })
+        setCash(USER_ID, id)
             .catch();
-        setCash(USER_ID, params.id)
-            .catch();
-        dispatch({
-            type: LOG_IN,
-            payload: params
-        });
     }
 
     const signOut = () => {
         removeCash(AUTH_TOKEN)
-            .catch();
+            .then(() => {
+                dispatch({type: LOG_OUT});
+            })
         removeCash(USER_ID)
             .catch();
-        dispatch({type: LOG_OUT});
     }
 
     return (

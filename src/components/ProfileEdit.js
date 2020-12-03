@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext } from 'react';
 
 import {
     StyleSheet,
@@ -9,6 +9,7 @@ import {
 import {
     View,
     Text,
+    Spinner,
     Form,
     Item,
     Input,
@@ -17,15 +18,13 @@ import {
 
 import * as ImagePicker from 'expo-image-picker';
 import { ReactNativeFile } from "apollo-upload-client";
-import {gql} from "@apollo/client";
+import { AuthContext } from "../context/auth/authContext";
+import { nameServer } from "../config";
+import student from '../../assets/student.png';
 
-export const UPDATE_AVATAR = gql`
-    mutation UpdateAvatar($id: String!, $file: Upload!){
-        uploadProfilePic(personId: $id, file: $file)
-    }
-`
+export const ProfileEdit = ({params, context, updateAvatar, loadingUpdateAvatar, refetch}) => {
+    const { auth } = useContext(AuthContext);
 
-export const ProfileEdit = ({params, context}) => {
     const {fields, setFields} = context;
 
     const {
@@ -35,7 +34,8 @@ export const ProfileEdit = ({params, context}) => {
         country,
         city,
         institution,
-        description
+        description,
+        photo
     } = params;
 
     useEffect(() => {
@@ -43,6 +43,22 @@ export const ProfileEdit = ({params, context}) => {
             name, surname, email, country, city, institution, description
         });
     }, [])
+
+    const uploadFile = (uri) => {
+        const file = new ReactNativeFile({
+            uri: uri,
+            type: 'image/jpeg',
+            name: "Avatar.jpg"
+        });
+        updateAvatar({
+            variables: {
+                id: auth.id,
+                file: file
+            }
+        })
+            .then(() => refetch())
+            .catch(e => alert(JSON.stringify(e)));
+    }
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
@@ -58,7 +74,7 @@ export const ProfileEdit = ({params, context}) => {
         });
 
         if(!result.cancelled){
-
+            uploadFile(result.uri);
         }
     };
 
@@ -74,9 +90,13 @@ export const ProfileEdit = ({params, context}) => {
             aspect: [1, 1],
             quality: 1,
         });
+
+        if(!result.cancelled){
+            uploadFile(result.uri);
+        }
     }
 
-    const alert = () => Alert.alert(
+    const alerting = () => Alert.alert(
         "Change photo",
         "Choose one of methods",
         [
@@ -94,6 +114,10 @@ export const ProfileEdit = ({params, context}) => {
         }
     );
 
+    const generateLink = (fileId) => {
+        return `${nameServer}/download?id=${fileId}`
+    }
+
     return(
         <>
             <View style={styles.viewPart}>
@@ -103,16 +127,19 @@ export const ProfileEdit = ({params, context}) => {
                     </Text>
                 </View>
                 <View style={{alignItems: 'center'}}>
-                    <TouchableOpacity
-                        style={{width: 200}}
-                        onPress={() => alert()}
-                    >
-                        <Image
-                            style={{height: 200, width: 200}}
-                            resizeMode={"contain"}
-                            source={{uri: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/4ad36332-03b9-4804-aad7-acc8455a1109/d48alga-49085c28-64dc-4c5b-834f-a014130bddd3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOiIsImlzcyI6InVybjphcHA6Iiwib2JqIjpbW3sicGF0aCI6IlwvZlwvNGFkMzYzMzItMDNiOS00ODA0LWFhZDctYWNjODQ1NWExMTA5XC9kNDhhbGdhLTQ5MDg1YzI4LTY0ZGMtNGM1Yi04MzRmLWEwMTQxMzBiZGRkMy5wbmcifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6ZmlsZS5kb3dubG9hZCJdfQ.fgDrJScXYuMki_ee5-Qx8g554MMjdRZr1yvyqRlB5K8'}}
-                        />
-                    </TouchableOpacity>
+                    {loadingUpdateAvatar?
+                        <Spinner/>
+                    :
+                        <TouchableOpacity
+                            style={{width: 200}}
+                            onPress={() => alerting()}
+                        >
+                            <Image
+                                style={{height: 200, width: 200}}
+                                resizeMode={"contain"}
+                                source={photo ? {uri: generateLink(photo)}: student}
+                            />
+                        </TouchableOpacity>}
                 </View>
             </View>
             <View style={styles.viewPart}>
