@@ -18,16 +18,6 @@ const REGISTER = gql`
     mutation Register($email: String!, $name: String!, $surname: String!, $password: String!) {
         register(email: $email, name: $name, surname: $surname, password: $password, accountType: "student") {
             _id
-            email
-            name
-            surname
-            country
-            city
-            institution
-            description
-            photo {
-                _id
-            }
             token
         }
     }
@@ -47,13 +37,15 @@ export const SignUpForm = () => {
         }
     });
 
-    const [fields, setFields] = useState({
-       firstName: '',
-       lastName: '',
-       email: '',
-       password: '',
-       repeatPassword: ''
-    });
+    const initialFields = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        repeatPassword: ''
+    };
+
+    const [fields, setFields] = useState(initialFields);
 
     return (
         <View style={styles.container}>
@@ -62,7 +54,6 @@ export const SignUpForm = () => {
                     <Input
                         placeholder={"first name"}
                         style={{height: 30}}
-                        value={fields.firstName}
                         onChangeText={(value) => setFields({
                             ...fields,
                             firstName: value
@@ -73,7 +64,6 @@ export const SignUpForm = () => {
                     <Input
                         placeholder={"last name"}
                         style={{height: 30}}
-                        value={fields.lastName}
                         onChangeText={(value) => setFields({
                             ...fields,
                             lastName: value
@@ -84,7 +74,6 @@ export const SignUpForm = () => {
                     <Input
                         placeholder={"e-mail"}
                         style={{height: 30}}
-                        value={fields.email}
                         onChangeText={(value) => setFields({
                             ...fields,
                             email: value
@@ -96,7 +85,6 @@ export const SignUpForm = () => {
                         placeholder={"password"}
                         style={{height: 30}}
                         secureTextEntry={true}
-                        value={fields.password}
                         onChangeText={(value) => setFields({
                             ...fields,
                             password: value
@@ -108,7 +96,6 @@ export const SignUpForm = () => {
                         placeholder={"repeat password"}
                         style={{height: 30}}
                         secureTextEntry={true}
-                        value={fields.repeatPassword}
                         onChangeText={(value) => setFields({
                             ...fields,
                             repeatPassword: value
@@ -193,6 +180,7 @@ export const SignUpForm = () => {
                                 password: fields.password
                             }
                         })
+                            .then(() => setFields(initialFields))
                             .catch();
                     }}
                 >

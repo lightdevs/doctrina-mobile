@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useContext } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import {
     ScrollView,
@@ -26,6 +26,7 @@ const PROFILE_QUERY = gql`
             city
             institution
             description
+            photo
         }
     }
 `
@@ -65,15 +66,23 @@ const UPDATE_PROFILE = gql`
     }
 `
 
+const UPDATE_AVATAR = gql`
+    mutation UpdateAvatar($id: String!, $file: Upload!){
+        uploadProfilePic(personId: $id, file: $file)
+    }
+`
+
 export const ProfileScreen = ({navigation}) => {
     const [edit, setEdit] = useState(false);
     const [flip, setFlip] = useState(false);
     const [fields, setFields] = useState({});
 
-    const { loading: loadingQuery, error: errorQuery, data: dataQuery } = useQuery(PROFILE_QUERY);
-    const [updateProfile, {loading: loadingMutation}] = useMutation(UPDATE_PROFILE, {
+    const { loading: loadingQuery, error, data: dataQuery, refetch } = useQuery(PROFILE_QUERY);
+    const [updateProfile, {loading: loadingUpdateProfile}] = useMutation(UPDATE_PROFILE, {
         ignoreResults: true
     });
+
+    const [updateAvatar] = useMutation(UPDATE_AVATAR);
 
     useFocusEffect(useCallback(() => {
         if(!edit){
@@ -116,7 +125,9 @@ export const ProfileScreen = ({navigation}) => {
         }
     }), [])
 
-    if(loadingQuery || loadingMutation){
+    error && alert(JSON.stringify(error));
+
+    if(loadingQuery || loadingUpdateProfile){
         return <LoadingScreen/>;
     }
 
@@ -128,9 +139,18 @@ export const ProfileScreen = ({navigation}) => {
         <ScrollView>
             {
                 edit?
-                    <ProfileEdit params={dataQuery.me} context={{fields, setFields}}/>
+                    <ProfileEdit
+                        params={dataQuery.me}
+                        context={{fields, setFields}}
+                        updateAvatar={updateAvatar}
+                        refetch={refetch}
+                    />
                 :
-                    <ProfileShow params={dataQuery.me} context={{flip, setFlip}}/>
+                    <ProfileShow
+                        params={dataQuery.me}
+                        context={{flip, setFlip}}
+                        updateAvatar={updateAvatar}
+                    />
             }
         </ScrollView>
     )

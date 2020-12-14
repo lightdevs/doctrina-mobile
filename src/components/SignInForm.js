@@ -24,10 +24,11 @@ const LOGIN = gql`
 `
 
 export const SignInForm = () => {
-    const [fields, setFields] = useState({
+    const initialFields = {
         email: '',
         password: ''
-    })
+    };
+    const [fields, setFields] = useState(initialFields)
 
     const { signIn } = useContext(AuthContext);
 
@@ -46,7 +47,6 @@ export const SignInForm = () => {
                     <Input
                         placeholder={"e-mail"}
                         style={{height: 30}}
-                        value={fields.email}
                         onChangeText={(value) => setFields({
                             ...fields,
                             email: value
@@ -58,7 +58,6 @@ export const SignInForm = () => {
                         placeholder={"password"}
                         style={{height: 30}}
                         secureTextEntry={true}
-                        value={fields.password}
                         onChangeText={(value) => setFields({
                             ...fields,
                             password: value
@@ -88,6 +87,7 @@ export const SignInForm = () => {
                                 password: fields.password
                             }
                         })
+                            .then(() => setFields(initialFields))
                             .catch((e) => {
                                 return Toast.show({
                                     text: e.message

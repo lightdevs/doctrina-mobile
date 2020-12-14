@@ -29,7 +29,7 @@ export const AppNavigation = () => {
         <NavigationContainer>
             <Stack.Navigator>
                 {
-                    !!auth.token?
+                    auth.token?
                         <Stack.Screen
                             name="Main"
                             component={BottomTab}

@@ -131,11 +131,11 @@ export const CourseScreen = ({navigation, route}) => {
                         <Text>
                             <Text>
                                 {
-                                    dataC.courseById.course.dateStart && (dateFormat(new Date(dataC.courseById.course.dateStart), "dd.mm.yyyy"))
+                                    dataC && (dateFormat(new Date(dataC.courseById.course.dateStart), "dd.mm.yyyy"))
                                 }
                                 {" - "}
                                 {
-                                    dataC.courseById.course.dateEnd && (dateFormat(new Date(dataC.courseById.course.dateEnd), "dd.mm.yyyy"))
+                                    dataC && (dateFormat(new Date(dataC.courseById.course.dateEnd), "dd.mm.yyyy"))
                                 }
                             </Text>
                         </Text>

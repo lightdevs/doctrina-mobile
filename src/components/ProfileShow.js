@@ -13,9 +13,11 @@ import {
 } from "native-base";
 
 import FlipCard from "react-native-flip-card";
-import UserAvatar from "react-native-user-avatar";
+import { Avatar } from "react-native-elements";
 import { LinearGradient } from "expo-linear-gradient";
 import { AuthContext } from "../context/auth/authContext";
+import { nameServer } from "../config";
+import student from '../../assets/student.png';
 
 const width = Dimensions.get('window').width;
 
@@ -23,7 +25,7 @@ export const ProfileShow = ({params, context}) => {
     const { flip, setFlip } = context;
     const { signOut } = useContext(AuthContext);
 
-    const {name, surname, email, country, city, institution, description} = params;
+    const {name, surname, email, country, city, institution, description, photo} = params;
 
     const alerting = () => Alert.alert(
         "LOG OUT",
@@ -36,7 +38,6 @@ export const ProfileShow = ({params, context}) => {
             },
             {
                 text: 'CANCEL',
-                onPress: () => null,
                 style: 'cancel'
             }
         ],
@@ -44,6 +45,10 @@ export const ProfileShow = ({params, context}) => {
             cancelable: false
         }
     )
+
+    const generateLink = (fileId) => {
+        return `${nameServer}/download?id=${fileId}`
+    }
 
     return (
         <>
@@ -55,15 +60,15 @@ export const ProfileShow = ({params, context}) => {
             >
                 <View style={[styles.viewPart, {marginTop: 10}]}>
                     <View style={{flexDirection: 'row'}}>
-                        <TouchableOpacity
-                            onPress={() => setFlip(true)}
-                        >
-                            <UserAvatar
+                        <View style={{marginRight: 10}}>
+                            <Avatar
                                 size={100}
-                                name={name && `${name} ${surname}`}
-                                style={{marginRight: 10}}
+                                rounded
+                                onPress={() => setFlip(true)}
+                                source={photo? {uri: generateLink(photo)}: student}
+                                title={`${name[0]}${surname[0]}`}
                             />
-                        </TouchableOpacity>
+                        </View>
                         <View style={{justifyContent: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>
                                 {name} {surname}
@@ -80,10 +85,10 @@ export const ProfileShow = ({params, context}) => {
                 >
                     <ImageBackground
                         style={{height: width, justifyContent: 'space-between'}}
-                        source={{uri: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/4ad36332-03b9-4804-aad7-acc8455a1109/d48alga-49085c28-64dc-4c5b-834f-a014130bddd3.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOiIsImlzcyI6InVybjphcHA6Iiwib2JqIjpbW3sicGF0aCI6IlwvZlwvNGFkMzYzMzItMDNiOS00ODA0LWFhZDctYWNjODQ1NWExMTA5XC9kNDhhbGdhLTQ5MDg1YzI4LTY0ZGMtNGM1Yi04MzRmLWEwMTQxMzBiZGRkMy5wbmcifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6ZmlsZS5kb3dubG9hZCJdfQ.fgDrJScXYuMki_ee5-Qx8g554MMjdRZr1yvyqRlB5K8'}}
+                        source={photo? {uri: generateLink(photo)}: student}
                     >
                         <LinearGradient
-                            style={{height: 60, padding: 5, alignItems: 'flex-end'}}
+                            style={{height: 70, padding: 5, alignItems: 'flex-end'}}
                             locations={[0, 1.0]}
                             colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.00)']}
                         />
